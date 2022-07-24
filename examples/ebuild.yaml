@@ -1,0 +1,8 @@
+excludes: '**/*.recover.e'
+includes: '**/*.e'
+project:
+    author: SalHe
+    homepage: https://github.com/SalHe
+    name: ebuild-example
+    repository: https://github.com/SalHe/ebuild
+    version: "1.0"
