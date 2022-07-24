@@ -12,6 +12,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var defaultEBuildYaml = `
+project:
+    name: ebuild-example
+    version: "1.0"
+    description: 这是由ebuild创建的示例工程。
+    author: SalHe
+    repository: https://github.com/SalHe/ebuild
+    homepage: https://github.com/SalHe
+excludes:
+    - '**/*.recover.e'
+    - '**/*.ecode/**.e'
+    - '**/*.代码/**.e'
+includes:
+    - '**/*.e'
+e2txt:
+    name-style: 中文
+	generate-e: true
+`[1:] // 删除首空行
+
 var initCmd = cobra.Command{
 	Use:   "init",
 	Short: "初始化一个工程。",
@@ -33,18 +52,10 @@ var initCmd = cobra.Command{
 				return
 			}
 
-			deps.Vp.Set("project.name", "ebuild-example")
-			deps.Vp.Set("project.version", "1.0")
-			deps.Vp.Set("project.author", "SalHe")
-			deps.Vp.Set("project.repository", "https://github.com/SalHe/ebuild")
-			deps.Vp.Set("project.homepage", "https://github.com/SalHe")
-			deps.Vp.Set("includes", "**/*.e")
-			deps.Vp.Set("excludes", "**/*.recover.e")
-			if err := deps.Vp.WriteConfig(); err != nil {
-				color.Redf("写出初始配置时出错。", err)
+			if err := os.WriteFile(configFile, []byte(defaultEBuildYaml), 0666); err != nil {
+				color.Redln("创建配置文件失败！")
 				os.Exit(1)
 			}
-
 			os.WriteFile(path.Join(deps.BuildDir, ".gitignore"), []byte(`ebuild.pwd.yaml`), 0666)
 			os.WriteFile(path.Join(deps.BuildDir, "ebuild.pwd.yaml"), []byte(`a.e: '123456pwd'`), 0666)
 

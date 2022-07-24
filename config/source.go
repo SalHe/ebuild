@@ -16,12 +16,12 @@ const (
 )
 
 type Source struct {
-	Source             string       `yaml:"source"`
-	Output             string       `yaml:"output"`
-	Compiler           CompilerType `yaml:"compiler"`
-	CompileConfig      string       `yaml:"compile-config"`
-	CompileDescription string       `yaml:"compile-description"`
-	Package            bool         `yaml:"package"`
+	Source             string       `mapstructure:"source"`
+	Output             string       `mapstructure:"output"`
+	Compiler           CompilerType `mapstructure:"compiler"`
+	CompileConfig      string       `mapstructure:"compile-config"`
+	CompileDescription string       `mapstructure:"compile-description"`
+	Package            bool         `mapstructure:"package"`
 }
 
 func (c *CompilerType) Args() []string {

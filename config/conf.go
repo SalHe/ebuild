@@ -1,16 +1,18 @@
 package config
 
 type Config struct {
-	Project  *Project `yaml:"project"`
-	Includes []string `yaml:"includes"`
-	Excludes []string `yaml:"excludes"`
+	Project  *Project `mapstructure:"project"`
+	Includes []string `mapstructure:"includes"`
+	Excludes []string `mapstructure:"excludes"`
+	E2Txt    *E2Txt   `mapstructure:"e2txt"`
 }
 
 type Project struct {
-	Name       string    `yaml:"name"`
-	Version    string    `yaml:"version"`
-	Author     string    `yaml:"author"`
-	Repository string    `yaml:"repository"`
-	Homepage   string    `yaml:"homepage"`
-	Source     []*Source `yaml:"sources"`
+	Name        string    `mapstructure:"name"`
+	Description string    `mapstructure:"description"`
+	Version     string    `mapstructure:"version"`
+	Author      string    `mapstructure:"author"`
+	Repository  string    `mapstructure:"repository"`
+	Homepage    string    `mapstructure:"homepage"`
+	Source      []*Source `mapstructure:"sources"`
 }

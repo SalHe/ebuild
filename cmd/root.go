@@ -34,6 +34,8 @@ func init() {
 		deps.Vp.SetConfigType("yaml")
 		deps.Vp.AddConfigPath(deps.BuildDir)
 
+		deps.Vp.SetDefault("e2txt.name-style", "中文")
+
 		deps.PasswordResolver = &sources.FilePasswordResolver{
 			File: filepath.Join(deps.BuildDir, "ebuild.pwd.yaml"),
 		}
@@ -56,7 +58,7 @@ func loadConfiguration(cmd *cobra.Command, args []string) {
 func initRootCmd() {
 	curDir, _ := os.Getwd()
 	rootCmd.PersistentFlags().StringVarP(&deps.BuildDir, "build", "b", curDir, "指定构建的目录。")
-	rootCmd.AddCommand(&initCmd, &listCmd, &toolchainCommand)
+	rootCmd.AddCommand(&initCmd, &infoCmd, &toolchainCommand, &e2txtCmd)
 }
 
 func loadSources(configFileUsed string) {
