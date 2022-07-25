@@ -5,6 +5,7 @@ import (
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/utils"
 	"golang.org/x/sys/windows/registry"
+	"os"
 	"os/exec"
 	"path/filepath"
 )
@@ -35,6 +36,12 @@ func lookupIn(subDir string, execName string) string {
 	}
 
 	p, _ = filepath.Abs(fmt.Sprintf("./.toolchain/%v/%v", subDir, execName))
+	if utils.FileExists(p) {
+		return p
+	}
+
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	p, _ = filepath.Abs(fmt.Sprintf("%v/.toolchain/%v/%v", dir, subDir, execName))
 	if utils.FileExists(p) {
 		return p
 	}
