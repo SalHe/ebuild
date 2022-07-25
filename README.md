@@ -1,7 +1,7 @@
 # ebuild
 
 `ebuild`是一个针对易语言的构建工具，该工具主要使用配置化的方式完成自动化的将易语言源文件转换成文本格式描述的文件(使用了[e2txt](http://e2ee.jimstone.com.cn/downloads/))
-，以及借助[ecl](https://bbs.125.la/forum.php?mod=viewthread&tid=14553929&highlight=ecl)完成构建。
+，以及借助[ecl](https://bbs.125.la/forum.php?mod=viewthread&tid=14553929&highlight=ecl)完成源文件编译。
 
 **该项目目前处于开发阶段。**
 
@@ -15,6 +15,23 @@
 - [ ] 构建前后动作
 - [ ] 使用易语言程序作为自动化构建脚本
 - [ ] TO BE CONTINUED...
+
+## 效果图
+
+![查看项目信息](./docs/imgs/info.gif)
+
+```shell
+# 预览当前项目配置信息
+
+./ebuild.exe info --build ./example/
+```
+
+![E2TXT](./docs/imgs/e2txt.gif)
+```shell
+# 批量将源文件转换到文本格式的代码
+
+./ebuild.exe e2txt --build ./example/
+```
 
 ## 引用项目
 
