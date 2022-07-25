@@ -27,12 +27,14 @@ var infoCmd = cobra.Command{
 }
 
 func showE2TxtConfig() {
-	color.BgWhite.Println("    E2TXT：      ")
+	color.Greenln("    e2txt配置")
+	color.Greenln("---------------------")
 	fmt.Printf("风格：%s\n", deps.C.E2Txt.Style)
 }
 
 func showProjectInfo() {
-	color.BgWhite.Println("    当前项目信息：      ")
+	color.Greenln("    当前项目信息")
+	color.Greenln("---------------------")
 	fmt.Printf("项目：%s\n", deps.C.Project.Name)
 	fmt.Printf("介绍：%s\n", deps.C.Project.Description)
 	fmt.Printf("版本：%s\n", deps.C.Project.Version)
@@ -44,6 +46,7 @@ func showProjectInfo() {
 func showSources() {
 	if len(deps.ESrcs) > 0 {
 		color.Greenln("已为您找到以下源文件：")
+		color.Greenln("---------------------")
 	} else {
 		color.Redln("未能找到匹配模式的源文件哦。")
 	}
