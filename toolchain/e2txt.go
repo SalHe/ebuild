@@ -6,6 +6,7 @@ import (
 	"golang.org/x/text/transform"
 	"io"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -51,17 +52,34 @@ func ExecE2Txt(path string, args []string) (over <-chan interface{}, log <-chan 
 		for !overB {
 			select {
 			case o := <-stdoutIncoming:
-				o = o[:len(o)-1] // \r
+				o = strings.TrimSuffix(o, "\r")
 				if strings.HasPrefix(o, "SUCC:") {
-					outDirChan <- o[5:]
+					outDirChan <- formatLog(o[5:])
+				} else if strings.HasPrefix(o, "ERROR:") {
+					errorChan <- formatLog(o[6:])
 				} else if o != "LOG:" {
-					logChan <- o
+					logChan <- formatLog(o)
 				}
 			case e := <-stderrIncoming:
-				errorChan <- e[6:]
+				e = strings.TrimPrefix(e, "ERROR:")
+				e = strings.TrimSuffix(e, "\r")
+				errorChan <- formatLog(e)
 			}
 		}
 	}()
 
 	return
+}
+
+var spaces = regexp.MustCompile("\\s{2,}")
+
+func formatLog(o string) string {
+	return string(spaces.ReplaceAll([]byte(takeOffTime(o)), []byte(" "))) // 把两个或两个以上的空白字符替换成一个
+}
+
+func takeOffTime(o string) string {
+	if len(o) >= 11 && o[len("2022-07-25 09:")-1] == ':' {
+		return o[len("2022-07-25 09:36:24 "):]
+	}
+	return o
 }
