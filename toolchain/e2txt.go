@@ -10,27 +10,42 @@ import (
 	"strings"
 )
 
-func ExecE2Txt(path string, args []string) (over <-chan interface{}, log <-chan string, outDir <-chan string, error <-chan string) {
-	cmd := exec.Command(path, args...)
+type ReportFunc func(string)
+
+type E2TxtCmd struct {
+	path     string
+	args     []string
+	OnLog    ReportFunc
+	OnError  ReportFunc
+	OnOutDir ReportFunc
+	OnOver   func()
+}
+
+func reportNothing(s string) {}
+
+func NewE2TxtCmd(path string, args ...string) *E2TxtCmd {
+	return &E2TxtCmd{
+		path:     path,
+		args:     args,
+		OnLog:    reportNothing,
+		OnError:  reportNothing,
+		OnOutDir: reportNothing,
+		OnOver:   func() {},
+	}
+}
+
+func (c *E2TxtCmd) Exec() {
+	cmd := exec.Command(c.path, c.args...)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	cmd.Start()
 
-	overChan := make(chan interface{}, 3)
-	over = overChan
 	overB := false
 	go func() {
 		cmd.Wait()
-		overChan <- nil
+		c.OnOver()
 		overB = true
 	}()
-
-	logChan := make(chan string)
-	log = logChan
-	errorChan := make(chan string)
-	error = errorChan
-	outDirChan := make(chan string)
-	outDir = outDirChan
 
 	readToChan := func(pipe io.Reader) <-chan string {
 		reader, incoming := bufio.NewReader(transform.NewReader(pipe, simplifiedchinese.GBK.NewDecoder())), make(chan string)
@@ -54,21 +69,19 @@ func ExecE2Txt(path string, args []string) (over <-chan interface{}, log <-chan 
 			case o := <-stdoutIncoming:
 				o = strings.TrimSuffix(o, "\r")
 				if strings.HasPrefix(o, "SUCC:") {
-					outDirChan <- formatLog(o[5:])
+					c.OnOutDir(formatLog(o[5:]))
 				} else if strings.HasPrefix(o, "ERROR:") {
-					errorChan <- formatLog(o[6:])
+					c.OnError(formatLog(o[6:]))
 				} else if o != "LOG:" {
-					logChan <- formatLog(o)
+					c.OnLog(formatLog(o))
 				}
 			case e := <-stderrIncoming:
 				e = strings.TrimPrefix(e, "ERROR:")
 				e = strings.TrimSuffix(e, "\r")
-				errorChan <- formatLog(e)
+				c.OnError(formatLog(e))
 			}
 		}
 	}()
-
-	return
 }
 
 var spaces = regexp.MustCompile("\\s{2,}")
