@@ -31,6 +31,10 @@ e2txt:
 	generate-e: true
 `[1:] // 删除首空行
 
+var defaultGitignore = `# 恢复出来的易语言源文件和密码文件不纳入版本控制
+*.recover.e
+ebuild.pwd.yaml`
+
 var initCmd = cobra.Command{
 	Use:   "init",
 	Short: "初始化一个工程。",
@@ -56,7 +60,7 @@ var initCmd = cobra.Command{
 				color.Redln("创建配置文件失败！")
 				os.Exit(1)
 			}
-			os.WriteFile(path.Join(deps.BuildDir, ".gitignore"), []byte(`ebuild.pwd.yaml`), 0666)
+			os.WriteFile(path.Join(deps.BuildDir, ".gitignore"), []byte(defaultGitignore), 0666)
 			os.WriteFile(path.Join(deps.BuildDir, "ebuild.pwd.yaml"), []byte(`a.e: '123456pwd'`), 0666)
 
 			color.Greenf("成功创建配置文件。")

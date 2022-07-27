@@ -58,7 +58,7 @@ func loadConfiguration(cmd *cobra.Command, args []string) {
 func initRootCmd() {
 	curDir, _ := os.Getwd()
 	rootCmd.PersistentFlags().StringVarP(&deps.BuildDir, "build", "b", curDir, "指定构建的目录。")
-	rootCmd.AddCommand(&initCmd, &infoCmd, &toolchainCommand, &e2txtCmd)
+	rootCmd.AddCommand(&initCmd, &infoCmd, &toolchainCommand, &e2txtCmd, &txt2eCmd)
 }
 
 func loadSources(configFileUsed string) {

@@ -20,25 +20,39 @@ var e2txtCmd = cobra.Command{
 	Run:    runE2Txt,
 }
 
+var txt2eCmd = e2txtCmd
+
 func init() {
-	e2txtCmd.Flags().Uint8VarP(&concurrencyCount, "concurrency", "c", 5, "最大并行转换文件的个数.")
+	txt2eCmd.Use = "txt2e"
+	e2txtCmd.Short = "将 .ecode 文件夹中的文本格式的易语言代码恢复成易语言二进制源文件。"
+
+	cmds := []*cobra.Command{&e2txtCmd, &txt2eCmd}
+	for _, cmd := range cmds {
+		cmd.Flags().Uint8VarP(&concurrencyCount, "concurrency", "c", 5, "最大并行转换文件的个数.")
+	}
 }
 
 func runE2Txt(cmd *cobra.Command, args []string) {
+	isE2Txt := cmd.Use != "txt2e"
+
 	over := false
 	allOk := true
 
 	// 准备多行动态刷新
 	liveLines := utils.NewLiveLines(len(deps.ESrcs))
 	liveLines.Header(func() string {
-		if over {
-			if allOk {
-				return "转换已完成！\n\n"
-			} else {
-				return color.Red.Render("转换结束，部分源码转换失败，请注意查看！\n\n")
-			}
-		} else {
+		if !over {
 			return "正在为您转换源文件，请耐心等候：\n\n"
+		}
+
+		if allOk {
+			return "转换已完成！\n\n"
+		}
+
+		if isE2Txt {
+			return color.Red.Render("转换结束，部分源码转换失败，请注意查看！\n\n")
+		} else {
+			return color.Red.Render("转换结束，恢复源码部分失败，请注意查看！\n\n")
 		}
 	})
 	liveLines.Start()
@@ -47,18 +61,38 @@ func runE2Txt(cmd *cobra.Command, args []string) {
 	tasksExecutor := utils.NewTasksExecutor(len(deps.ESrcs), int(concurrencyCount))
 	tasksExecutor.OnPreExec = func(id int, te *utils.TasksExecutor) {
 		src := deps.ESrcs[id]
+		if !isE2Txt {
+			src = utils.ECodeDir(src)
+		}
 		srcRel, _ := filepath.Rel(deps.BuildDir, src)
 		liveLines.Update(id, fmt.Sprintf("[等待中][%s]", srcRel))
 	}
 	tasksExecutor.OnExec = func(id int, te *utils.TasksExecutor) {
 		update := func(o string) { liveLines.Update(id, o) }
 		errorOccurs := func() { allOk = false }
-		convertE2Txt(update, errorOccurs, deps.ESrcs[id])
+		if isE2Txt {
+			convertE2Txt(update, errorOccurs, deps.ESrcs[id])
+		} else {
+			convertTxt2E(update, errorOccurs, deps.ESrcs[id])
+		}
 	}
 	tasksExecutor.Start()
 
 	tasksExecutor.Wait()
 	liveLines.Stop()
+}
+
+func convertTxt2E(out func(string), errorOccurs func(), src string) {
+	ecode := utils.ECodeDir(src)
+
+	dir, name, ext := utils.FilePathElements(src)
+	src = filepath.Join(dir, name+".recover"+ext)
+
+	srcRel, _ := filepath.Rel(deps.BuildDir, src)
+	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
+
+	args := deps.C.E2Txt.ArgsTxt2E(ecode, src)
+	execE2TxtCmd(out, errorOccurs, eCodeRel, args, srcRel)
 }
 
 func convertE2Txt(out func(string), errorOccurs func(), src string) {
@@ -67,11 +101,10 @@ func convertE2Txt(out func(string), errorOccurs func(), src string) {
 	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
 
 	args := deps.C.E2Txt.ArgsE2Txt(src, ecode)
-
 	execE2TxtCmd(out, errorOccurs, srcRel, args, eCodeRel)
 }
 
-func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []string, eCodeRel string) {
+func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []string, dstRel string) {
 	wrong := false
 	errTips := ""
 	cmdOver := make(chan interface{})
@@ -92,9 +125,9 @@ func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []st
 	<-cmdOver
 
 	if !wrong {
-		out(fmt.Sprintf(color.Green.Sprintf("✔ [%s] -> [%s]", srcRel, eCodeRel)))
+		out(fmt.Sprintf(color.Green.Sprintf("✔ [%s] -> [%s]", srcRel, dstRel)))
 	} else {
 		errorOccurs()
-		out(fmt.Sprintf(color.Red.Sprintf("❌ [%s] -> [%s] %v", srcRel, eCodeRel, errTips)))
+		out(fmt.Sprintf(color.Red.Sprintf("❌ [%s] -> [%s] %v", srcRel, dstRel, errTips)))
 	}
 }

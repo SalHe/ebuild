@@ -1,3 +1,4 @@
+*.recover.e
 ebuild.pwd.yaml
 
 # 暂时考虑忽略掉本文件夹中所有文本式的代码
