@@ -24,7 +24,7 @@ var txt2eCmd = e2txtCmd
 
 func init() {
 	txt2eCmd.Use = "txt2e"
-	e2txtCmd.Short = "将 .ecode 文件夹中的文本格式的易语言代码恢复成易语言二进制源文件。"
+	txt2eCmd.Short = "将 .ecode 文件夹中的文本格式的易语言代码恢复成易语言二进制源文件。"
 
 	cmds := []*cobra.Command{&e2txtCmd, &txt2eCmd}
 	for _, cmd := range cmds {
