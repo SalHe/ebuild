@@ -72,12 +72,23 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 		liveLines.Update(id, fmt.Sprintf("[等待中][%s]", srcRel))
 	}
 	tasksExecutor.OnExec = func(id int, te *utils.TasksExecutor) {
-		update := func(o string) { liveLines.Update(id, o) }
-		errorOccurs := func() { allOk = false }
-		if isE2Txt {
-			convertE2Txt(update, errorOccurs, deps.ESrcs[id])
+		src := deps.ESrcs[id]
+		if len(deps.PasswordResolver.Resolve(src.Source)) <= 0 {
+			update := func(o string) { liveLines.Update(id, o) }
+			errorOccurs := func() { allOk = false }
+			if isE2Txt {
+				convertE2Txt(update, errorOccurs, src)
+			} else {
+				convertTxt2E(update, errorOccurs, src)
+			}
 		} else {
-			convertTxt2E(update, errorOccurs, deps.ESrcs[id])
+			srcRel, _ := filepath.Rel(deps.ProjectDir, src.AbsPath())
+			dstRel, _ := filepath.Rel(deps.ProjectDir, src.ECodeDir())
+			if isE2Txt {
+				liveLines.Update(id, color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", srcRel, dstRel))
+			} else {
+				liveLines.Update(id, color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", dstRel, srcRel))
+			}
 		}
 	}
 	tasksExecutor.Start()
@@ -135,9 +146,9 @@ func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []st
 	<-cmdOver
 
 	if !wrong {
-		out(fmt.Sprintf(color.Green.Sprintf("✔ [%s] -> [%s]", srcRel, dstRel)))
+		out(color.Green.Sprintf("✔ [%s] -> [%s]", srcRel, dstRel))
 	} else {
 		errorOccurs()
-		out(fmt.Sprintf(color.Red.Sprintf("❌ [%s] -> [%s] %v", srcRel, dstRel, errTips)))
+		out(color.Red.Sprintf("❌ [%s] -> [%s] %v", srcRel, dstRel, errTips))
 	}
 }
