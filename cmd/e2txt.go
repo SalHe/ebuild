@@ -82,6 +82,7 @@ func runE2Txt(cmd *cobra.Command, args []string) {
 	tasksExecutor.Start()
 
 	tasksExecutor.Wait()
+	over = true
 	liveLines.Stop()
 }
 
