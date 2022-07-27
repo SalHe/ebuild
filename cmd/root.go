@@ -59,6 +59,37 @@ func initRootCmd() {
 	curDir, _ := os.Getwd()
 	rootCmd.PersistentFlags().StringVarP(&deps.BuildDir, "build", "b", curDir, "指定构建的目录。")
 	rootCmd.AddCommand(&initCmd, &infoCmd, &toolchainCommand, &e2txtCmd, &txt2eCmd)
+
+	setMsgTemplate()
+}
+
+func setMsgTemplate() {
+	rootCmd.SetUsageTemplate(`使用方法:{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+别名:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+示例:
+{{.Example}}{{end}}{{if .HasAvailableSubCommands}}
+
+可用命令:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+参数:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+通用参数:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+其他帮助:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+使用 "{{.CommandPath}} [命令] --help" 查看与命令更多的帮助信息.{{end}}
+`)
+
+	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "版本: %s" .Version}}`)
 }
 
 func loadSources(configFileUsed string) {
