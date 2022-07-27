@@ -43,7 +43,13 @@ func init() {
 func initRootCmd() {
 	curDir, _ := os.Getwd()
 	rootCmd.PersistentFlags().StringVarP(&deps.BuildDir, "build", "b", curDir, "指定构建的目录。")
-	rootCmd.AddCommand(&initCmd, &infoCmd, &toolchainCommand, &e2txtCmd, &txt2eCmd)
+	rootCmd.AddCommand(
+		&initCmd,
+		&infoCmd,
+		&toolchainCommand,
+		&e2txtCmd, &txt2eCmd,
+		&cleanCmd,
+	)
 
 	setMsgTemplate()
 }
