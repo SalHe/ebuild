@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
+	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
 	"github.com/SalHe/ebuild/utils"
 	"github.com/gookit/color"
@@ -60,9 +61,11 @@ func runE2Txt(cmd *cobra.Command, args []string) {
 	// 准备执行任务
 	tasksExecutor := utils.NewTasksExecutor(len(deps.ESrcs), int(concurrencyCount))
 	tasksExecutor.OnPreExec = func(id int, te *utils.TasksExecutor) {
-		src := deps.ESrcs[id]
-		if !isE2Txt {
-			src = utils.ECodeDir(src)
+		var src string
+		if isE2Txt {
+			src = deps.ESrcs[id].AbsPath()
+		} else {
+			src = deps.ESrcs[id].ECodeDir()
 		}
 		srcRel, _ := filepath.Rel(deps.BuildDir, src)
 		liveLines.Update(id, fmt.Sprintf("[等待中][%s]", srcRel))
@@ -82,25 +85,25 @@ func runE2Txt(cmd *cobra.Command, args []string) {
 	liveLines.Stop()
 }
 
-func convertTxt2E(out func(string), errorOccurs func(), src string) {
-	ecode := utils.ECodeDir(src)
+func convertTxt2E(out func(string), errorOccurs func(), src *sources.Source) {
+	ecode := src.ECodeDir()
+	recoverESrc := src.RecoverESrcPath()
 
-	dir, name, ext := utils.FilePathElements(src)
-	src = filepath.Join(dir, name+".recover"+ext)
-
-	srcRel, _ := filepath.Rel(deps.BuildDir, src)
+	srcRel, _ := filepath.Rel(deps.BuildDir, recoverESrc)
 	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
 
-	args := deps.C.E2Txt.ArgsTxt2E(ecode, src)
+	args := deps.C.E2Txt.ArgsTxt2E(ecode, recoverESrc)
 	execE2TxtCmd(out, errorOccurs, eCodeRel, args, srcRel)
 }
 
-func convertE2Txt(out func(string), errorOccurs func(), src string) {
-	ecode := utils.ECodeDir(src)
-	srcRel, _ := filepath.Rel(deps.BuildDir, src)
+func convertE2Txt(out func(string), errorOccurs func(), src *sources.Source) {
+	eSrcFile := src.AbsPath()
+	ecode := src.ECodeDir()
+
+	srcRel, _ := filepath.Rel(deps.BuildDir, eSrcFile)
 	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
 
-	args := deps.C.E2Txt.ArgsE2Txt(src, ecode)
+	args := deps.C.E2Txt.ArgsE2Txt(eSrcFile, ecode)
 	execE2TxtCmd(out, errorOccurs, srcRel, args, eCodeRel)
 }
 

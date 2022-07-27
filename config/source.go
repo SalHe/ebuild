@@ -1,9 +1,5 @@
 package config
 
-import (
-	"strings"
-)
-
 type CompilerType string
 
 const (
@@ -15,13 +11,14 @@ const (
 	CompilerIndependent  = "独立编译"
 )
 
-type Source struct {
-	Source             string       `mapstructure:"source"`
-	Output             string       `mapstructure:"output"`
-	Compiler           CompilerType `mapstructure:"compiler"`
-	CompileConfig      string       `mapstructure:"compile-config"`
-	CompileDescription string       `mapstructure:"compile-description"`
-	Package            bool         `mapstructure:"package"`
+type Target struct {
+	Source             string `mapstructure:"source"` // 约定为相对于 ebuild.yaml 的相对路径
+	Output             string `mapstructure:"output"`
+	Description        string `mapstructure:"description"`
+	Build              *Build `mapstructure:"build"`
+	CompileConfig      string `mapstructure:"compile-config"`
+	CompileDescription string `mapstructure:"compile-description"`
+	Package            bool   `mapstructure:"package"` // 是否为易包
 }
 
 func (c *CompilerType) Args() []string {
@@ -40,28 +37,4 @@ func (c *CompilerType) Args() []string {
 		return []string{"-d"}
 	}
 	return []string{}
-}
-
-func (s *Source) CompileArgs(pwd string) (args []string) {
-	args = append(args, s.Source, s.Output)
-
-	if s.Package {
-		args = append(args, "-p")
-	} else {
-		args = append(args, s.Compiler.Args()...)
-		if strings.HasPrefix(string(s.Compiler), "-bm") {
-			if len(s.CompileConfig) > 0 {
-				args = append(args, "-bmcfg", s.CompileConfig)
-			}
-			if len(s.CompileDescription) > 0 {
-				args = append(args, "-bmdesc", s.CompileDescription)
-			}
-		}
-
-		if len(pwd) > 0 {
-			args = append(args, "-pwd", pwd)
-		}
-	}
-
-	return
 }

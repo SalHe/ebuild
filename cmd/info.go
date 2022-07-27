@@ -5,7 +5,6 @@ import (
 	"github.com/SalHe/ebuild/deps"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
-	"path/filepath"
 )
 
 var (
@@ -30,6 +29,7 @@ func showE2TxtConfig() {
 	color.Greenln("    e2txt配置")
 	color.Greenln("---------------------")
 	fmt.Printf("风格：%s\n", deps.C.E2Txt.Style)
+	fmt.Printf("生成易代码：%v\n", deps.C.E2Txt.GenerateE)
 }
 
 func showProjectInfo() {
@@ -51,18 +51,24 @@ func showSources() {
 		color.Redln("未能找到匹配模式的源文件哦。")
 	}
 
-	for _, srcPath := range deps.ESrcs {
-		var out string
-		rel, _ := filepath.Rel(deps.BuildDir, srcPath)
-		if absolutePath {
-			out = srcPath
+	for _, src := range deps.ESrcs {
+		if src.FromConfig() {
+			fmt.Print("(自定)")
 		} else {
-			out = rel
+			fmt.Print("(扫描)")
 		}
-		fmt.Print(out)
+		fmt.Print(" - ")
+
+		var out string
+		if absolutePath {
+			out = src.AbsPath()
+		} else {
+			out = src.Target.Source
+		}
+		fmt.Printf(out)
 
 		if showPassword {
-			pwd := deps.PasswordResolver.Resolve(rel)
+			pwd := deps.PasswordResolver.Resolve(src.Target.Source)
 			if len(pwd) > 0 {
 				fmt.Print("\t\t\t")
 				color.Grayp("  ---- 密码：" + pwd)

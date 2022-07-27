@@ -8,8 +8,8 @@ import (
 
 var (
 	C                config.Config
-	Vp               *viper.Viper = viper.New()
-	ESrcs            []string
+	Vp               = viper.New()
+	ESrcs            []*sources.Source
 	BuildDir         string
 	PasswordResolver sources.PasswordResolver
 )

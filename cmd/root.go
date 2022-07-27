@@ -3,12 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/sources"
-	"github.com/mattn/go-zglob"
 	"github.com/spf13/cobra"
 )
 
@@ -40,19 +38,6 @@ func init() {
 			File: filepath.Join(deps.BuildDir, "ebuild.pwd.yaml"),
 		}
 	})
-}
-
-func loadConfiguration(cmd *cobra.Command, args []string) {
-	_ = deps.Vp.ReadInConfig()
-
-	configFileUsed := deps.Vp.ConfigFileUsed()
-	if configFileUsed != "" {
-		fmt.Printf("已启用配置：%s\n", configFileUsed)
-		loadSources(configFileUsed)
-	} else {
-		fmt.Println("未找到配置文件。")
-		os.Exit(1)
-	}
 }
 
 func initRootCmd() {
@@ -90,33 +75,6 @@ func setMsgTemplate() {
 `)
 
 	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "版本: %s" .Version}}`)
-}
-
-func loadSources(configFileUsed string) {
-	if err := deps.Vp.Unmarshal(&deps.C); err != nil {
-		fmt.Println("反序列化配置出错，请检查您的配置是否正确！")
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	eSrc := make(map[string]bool)
-	searchAndSet := func(patterns []string, keep bool) {
-		for _, v := range patterns {
-			searchPattern := path.Join(filepath.Dir(configFileUsed), v)
-			files, _ := zglob.Glob(searchPattern)
-			for _, file := range files {
-				eSrc[file] = keep
-			}
-		}
-	}
-	searchAndSet(deps.C.Includes, true)
-	searchAndSet(deps.C.Excludes, false)
-
-	for file, included := range eSrc {
-		if included {
-			deps.ESrcs = append(deps.ESrcs, file)
-		}
-	}
 }
 
 func Execute() {
