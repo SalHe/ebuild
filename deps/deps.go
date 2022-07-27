@@ -10,6 +10,7 @@ var (
 	C                config.Config
 	Vp               = viper.New()
 	ESrcs            []*sources.Source
-	BuildDir         string
+	ProjectDir       string
+	OutputDir        string
 	PasswordResolver sources.PasswordResolver
 )

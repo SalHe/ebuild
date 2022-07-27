@@ -2,6 +2,22 @@ package config
 
 type CompilerType string
 
+func (c *CompilerType) HasChanged() bool {
+	return true
+}
+
+func (c *CompilerType) Name() string {
+	return "compiler"
+}
+
+func (c *CompilerType) ValueString() string {
+	return string(*c)
+}
+
+func (c *CompilerType) ValueType() string {
+	return "string"
+}
+
 const (
 	CompilerBlackMoon    = "黑月"
 	CompilerBlackMoonAsm = "黑月汇编"
@@ -12,9 +28,10 @@ const (
 )
 
 type Target struct {
-	Source             string `mapstructure:"source"` // 约定为相对于 ebuild.yaml 的相对路径
+	Name               string `mapstructure:"name"`        // 目标名称，只是一个简单名字介绍
+	Description        string `mapstructure:"description"` // 目标描述
+	Source             string `mapstructure:"source"`      // 约定为相对于 ebuild.yaml 的相对路径
 	Output             string `mapstructure:"output"`
-	Description        string `mapstructure:"description"`
 	Build              *Build `mapstructure:"build"`
 	CompileConfig      string `mapstructure:"compile-config"`
 	CompileDescription string `mapstructure:"compile-description"`

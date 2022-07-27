@@ -10,8 +10,7 @@ import (
 	"strings"
 )
 
-type ReportFunc func(string)
-
+// E2TxtCmd TODO 使用 Exec 实现
 type E2TxtCmd struct {
 	path     string
 	args     []string

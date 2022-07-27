@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,13 +16,13 @@ var rootCmd = &cobra.Command{
 	Short:   "ebuild 是一个专注于易语言自动化构建的工具。",
 	Long:    "使用Golang编写的、以 e2txt 和 ecl 作为基础工具的上层构建工具。",
 	Version: "0.0.1",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if buildDir, err := filepath.Abs(deps.BuildDir); err != nil {
-			fmt.Println("您输入的路径有误。")
-			os.Exit(1)
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if projectDir, err := filepath.Abs(deps.ProjectDir); err != nil {
+			return errors.New("您输入的路径有误。")
 		} else {
-			deps.BuildDir = buildDir
+			deps.ProjectDir = projectDir
 		}
+		return nil
 	},
 }
 
@@ -30,19 +31,19 @@ func init() {
 	cobra.OnInitialize(func() {
 		deps.Vp.SetConfigName("ebuild")
 		deps.Vp.SetConfigType("yaml")
-		deps.Vp.AddConfigPath(deps.BuildDir)
+		deps.Vp.AddConfigPath(deps.ProjectDir)
 
 		deps.Vp.SetDefault("e2txt.name-style", "中文")
 
 		deps.PasswordResolver = &sources.FilePasswordResolver{
-			File: filepath.Join(deps.BuildDir, "ebuild.pwd.yaml"),
+			File: filepath.Join(deps.ProjectDir, "ebuild.pwd.yaml"),
 		}
 	})
 }
 
 func initRootCmd() {
 	curDir, _ := os.Getwd()
-	rootCmd.PersistentFlags().StringVarP(&deps.BuildDir, "build", "b", curDir, "指定构建的目录。")
+	rootCmd.PersistentFlags().StringVarP(&deps.ProjectDir, "project", "b", curDir, "指定工程的目录。")
 	rootCmd.AddCommand(
 		&initCmd,
 		&infoCmd,

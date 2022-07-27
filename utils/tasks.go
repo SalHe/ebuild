@@ -33,8 +33,8 @@ func (te *TasksExecutor) Start() {
 
 	for t := 0; t < te.tasks; t++ {
 		t := t
+		te.wg.Add(1)
 		go func() {
-			te.wg.Add(1)
 			te.OnPreExec(t, te)
 			<-te.concurrency
 

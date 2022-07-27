@@ -30,7 +30,7 @@ func fetchELangPath() string {
 }
 
 func lookupIn(subDir string, execName string) string {
-	p := fmt.Sprintf("%v/.toolchain/%v/%v", deps.BuildDir, subDir, execName)
+	p := fmt.Sprintf("%v/.toolchain/%v/%v", deps.ProjectDir, subDir, execName)
 	if utils.FileExists(p) {
 		return p
 	}

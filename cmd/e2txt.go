@@ -68,7 +68,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 		} else {
 			src = deps.ESrcs[id].ECodeDir()
 		}
-		srcRel, _ := filepath.Rel(deps.BuildDir, src)
+		srcRel, _ := filepath.Rel(deps.ProjectDir, src)
 		liveLines.Update(id, fmt.Sprintf("[等待中][%s]", srcRel))
 	}
 	tasksExecutor.OnExec = func(id int, te *utils.TasksExecutor) {
@@ -96,8 +96,8 @@ func convertTxt2E(out func(string), errorOccurs func(), src *sources.Source) {
 	ecode := src.ECodeDir()
 	recoverESrc := src.RecoverESrcPath()
 
-	srcRel, _ := filepath.Rel(deps.BuildDir, recoverESrc)
-	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
+	srcRel, _ := filepath.Rel(deps.ProjectDir, recoverESrc)
+	eCodeRel, _ := filepath.Rel(deps.ProjectDir, ecode)
 
 	args := deps.C.E2Txt.ArgsTxt2E(ecode, recoverESrc)
 	execE2TxtCmd(out, errorOccurs, eCodeRel, args, srcRel)
@@ -107,8 +107,8 @@ func convertE2Txt(out func(string), errorOccurs func(), src *sources.Source) {
 	eSrcFile := src.AbsPath()
 	ecode := src.ECodeDir()
 
-	srcRel, _ := filepath.Rel(deps.BuildDir, eSrcFile)
-	eCodeRel, _ := filepath.Rel(deps.BuildDir, ecode)
+	srcRel, _ := filepath.Rel(deps.ProjectDir, eSrcFile)
+	eCodeRel, _ := filepath.Rel(deps.ProjectDir, ecode)
 
 	args := deps.C.E2Txt.ArgsE2Txt(eSrcFile, ecode)
 	execE2TxtCmd(out, errorOccurs, srcRel, args, eCodeRel)

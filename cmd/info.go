@@ -17,6 +17,7 @@ var infoCmd = cobra.Command{
 	Short:   "列出项目的相关信息。",
 	PreRunE: loadConfiguration,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println()
 		showProjectInfo()
 		fmt.Println()
 		showE2TxtConfig()

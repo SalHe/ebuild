@@ -1,5 +1,6 @@
+# 恢复出来的易语言源文件和密码文件不纳入版本控制
 *.recover.e
-ebuild.pwd.yaml
+#ebuild.pwd.yaml
 
-# 暂时考虑忽略掉本文件夹中所有文本式的代码
-*.ecode
+# 编译输出
+ebuild-out/

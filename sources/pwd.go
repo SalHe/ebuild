@@ -2,6 +2,7 @@ package sources
 
 import (
 	"os"
+	"sync"
 
 	"gopkg.in/yaml.v3"
 )
@@ -14,9 +15,14 @@ type FilePasswordResolver struct {
 	File   string
 	loaded bool
 	pwd    map[string]string
+
+	mutex sync.Mutex
 }
 
 func (f *FilePasswordResolver) Resolve(source string) string {
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+
 	if !f.loaded {
 		if bytes, err := os.ReadFile(f.File); err == nil {
 			yaml.Unmarshal(bytes, &f.pwd)

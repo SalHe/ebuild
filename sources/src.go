@@ -14,13 +14,17 @@ type Source struct {
 	fromYaml  bool
 }
 
-func FromYAML(src *config.Target, buildPath string) *Source {
-	return &Source{
+func FromYAML(src *config.Target, build *config.Build, buildPath string) *Source {
+	s := &Source{
 		Target:    src,
 		buildPath: buildPath,
 
 		fromYaml: true,
 	}
+	if s.Build == nil {
+		s.Build = build
+	}
+	return s
 }
 
 func FromPath(srcPath string, build *config.Build, buildPath string) *Source {
@@ -35,8 +39,8 @@ func FromPath(srcPath string, build *config.Build, buildPath string) *Source {
 	}
 }
 
-func (s *Source) CompileArgs(pwd string) (args []string) {
-	args = append(args, s.Target.Source, s.Output)
+func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
+	args = append(args, "make", s.AbsPath(), s.OutputPath(outputDir))
 
 	if s.Package {
 		args = append(args, "-p")
@@ -74,4 +78,20 @@ func (s *Source) ECodeDir() string {
 func (s *Source) RecoverESrcPath() string {
 	dir, name, ext := utils.FilePathElements(s.AbsPath())
 	return filepath.Join(dir, name+".recover"+ext)
+}
+
+func (s *Source) OutputPath(outputDir string) string {
+	dir, name, _ := utils.FilePathElements(s.AbsPath())
+	relDir, _ := filepath.Rel(s.buildPath, dir)
+	if s.Output != "" {
+		name = s.Output
+	}
+	return filepath.Join(outputDir, relDir, name)
+}
+
+func (s *Source) DisplayName() string {
+	if len(s.Name) <= 0 {
+		return s.Source
+	}
+	return s.Name
 }

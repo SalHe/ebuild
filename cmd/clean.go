@@ -23,6 +23,7 @@ var cleanCmd = cobra.Command{
 			preRun      func() bool
 			run         func(src *sources.Source)
 			disabled    bool
+			singleRun   bool
 		}{
 			{
 				description: "*.recover.e",
@@ -46,6 +47,15 @@ var cleanCmd = cobra.Command{
 					_ = os.RemoveAll(src.ECodeDir())
 				},
 			},
+
+			{
+				description: "编译结果",
+				singleRun:   true,
+				run: func(src *sources.Source) {
+					fmt.Println("正在删除 " + deps.OutputDir)
+					_ = os.RemoveAll(deps.OutputDir)
+				},
+			},
 		}
 
 		fmt.Println()
@@ -60,8 +70,12 @@ var cleanCmd = cobra.Command{
 				continue
 			}
 
-			for _, src := range deps.ESrcs {
-				task.run(src)
+			if task.singleRun {
+				task.run(nil)
+			} else {
+				for _, src := range deps.ESrcs {
+					task.run(src)
+				}
 			}
 			fmt.Println("清理完成")
 			fmt.Println()

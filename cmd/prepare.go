@@ -23,6 +23,8 @@ func loadConfiguration(cmd *cobra.Command, args []string) error {
 		return errors.New("反序列化配置出错，请检查您的配置是否正确！" + err.Error())
 	}
 
+	deps.OutputDir = filepath.Join(deps.ProjectDir, "ebuild-out")
+
 	fmt.Printf("已启用配置：%s\n", configFileUsed)
 	loadSources()
 	return nil
@@ -37,17 +39,15 @@ func loadSourceConfig(eFiles map[string]bool) {
 	var finalSources []*sources.Source
 
 	for _, source := range deps.C.Targets {
-		finalSrc := sources.FromYAML(source, deps.BuildDir)
-		if included, exist := eFiles[finalSrc.AbsPath()]; exist && included {
-			finalSources = append(finalSources, finalSrc)
-			eFiles[finalSrc.AbsPath()] = false
-		}
+		finalSrc := sources.FromYAML(source, deps.C.Build, deps.ProjectDir)
+		finalSources = append(finalSources, finalSrc)
+		eFiles[finalSrc.AbsPath()] = false
 	}
 
 	for p, keep := range eFiles {
 		if keep {
-			relPath, _ := filepath.Rel(deps.BuildDir, p)
-			finalSources = append(finalSources, sources.FromPath(relPath, deps.C.Build, deps.BuildDir))
+			relPath, _ := filepath.Rel(deps.ProjectDir, p)
+			finalSources = append(finalSources, sources.FromPath(relPath, deps.C.Build, deps.ProjectDir))
 		}
 	}
 
@@ -58,9 +58,10 @@ func scanEFiles() map[string]bool {
 	eSrc := make(map[string]bool)
 	searchAndSet := func(patterns []string, keep bool) {
 		for _, v := range patterns {
-			searchPattern := path.Join(deps.BuildDir, v)
+			searchPattern := path.Join(deps.ProjectDir, v)
 			files, _ := zglob.Glob(searchPattern)
 			for _, file := range files {
+				file, _ = filepath.Abs(file)
 				eSrc[file] = keep
 			}
 		}
