@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/sources"
@@ -15,10 +16,10 @@ import (
 var concurrencyCount uint8
 
 var e2txtCmd = cobra.Command{
-	Use:    "e2txt",
-	Short:  "将项目中包含的源文件按照约定配置转换成文本式的代码。",
-	PreRun: loadConfiguration,
-	Run:    runE2Txt,
+	Use:     "e2txt",
+	Short:   "将项目中包含的源文件按照约定配置转换成文本式的代码。",
+	PreRunE: loadConfiguration,
+	RunE:    runE2Txt,
 }
 
 var txt2eCmd = e2txtCmd
@@ -33,7 +34,7 @@ func init() {
 	}
 }
 
-func runE2Txt(cmd *cobra.Command, args []string) {
+func runE2Txt(cmd *cobra.Command, args []string) error {
 	isE2Txt := cmd.Use != "txt2e"
 
 	over := false
@@ -84,6 +85,11 @@ func runE2Txt(cmd *cobra.Command, args []string) {
 	tasksExecutor.Wait()
 	over = true
 	liveLines.Stop()
+
+	if allOk {
+		return nil
+	}
+	return errors.New("转换出错，具体信息请查看输出日志")
 }
 
 func convertTxt2E(out func(string), errorOccurs func(), src *sources.Source) {

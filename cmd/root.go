@@ -48,6 +48,7 @@ func initRootCmd() {
 		&infoCmd,
 		&toolchainCommand,
 		&e2txtCmd, &txt2eCmd,
+		&buildCmd,
 		&cleanCmd,
 	)
 

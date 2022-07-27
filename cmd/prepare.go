@@ -1,39 +1,36 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/sources"
 	"github.com/mattn/go-zglob"
 	"github.com/spf13/cobra"
-	"os"
 	"path"
 	"path/filepath"
 )
 
-func loadConfiguration(cmd *cobra.Command, args []string) {
+func loadConfiguration(cmd *cobra.Command, args []string) error {
 	_ = deps.Vp.ReadInConfig()
 
 	configFileUsed := deps.Vp.ConfigFileUsed()
 	if configFileUsed == "" {
-		fmt.Println("未找到配置文件。")
-		os.Exit(1)
+		return errors.New("未找到配置文件。")
 	}
 
 	if err := deps.Vp.Unmarshal(&deps.C); err != nil {
-		fmt.Println("反序列化配置出错，请检查您的配置是否正确！")
-		fmt.Println(err)
-		os.Exit(1)
+		return errors.New("反序列化配置出错，请检查您的配置是否正确！" + err.Error())
 	}
 
 	fmt.Printf("已启用配置：%s\n", configFileUsed)
 	loadSources()
+	return nil
 }
 
 func loadSources() {
 	eFiles := scanEFiles()
 	loadSourceConfig(eFiles)
-
 }
 
 func loadSourceConfig(eFiles map[string]bool) {

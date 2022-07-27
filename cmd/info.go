@@ -13,9 +13,9 @@ var (
 )
 
 var infoCmd = cobra.Command{
-	Use:    "info",
-	Short:  "列出项目的相关信息。",
-	PreRun: loadConfiguration,
+	Use:     "info",
+	Short:   "列出项目的相关信息。",
+	PreRunE: loadConfiguration,
 	Run: func(cmd *cobra.Command, args []string) {
 		showProjectInfo()
 		fmt.Println()
