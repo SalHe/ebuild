@@ -1,8 +1,11 @@
 package sources
 
 import (
+	"encoding/binary"
 	"github.com/SalHe/ebuild/config"
 	"github.com/SalHe/ebuild/utils"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -12,9 +15,12 @@ type Source struct {
 
 	projectDir string
 	fromYaml   bool
+
+	sourceType eSourceType
+	targetType eBuildTargetType
 }
 
-func FromYAML(src *config.Target, build *config.Build, projectPath string) *Source {
+func newSource(src *config.Target, build *config.Build, projectPath string, fromYaml bool) *Source {
 	s := &Source{
 		Target:     src,
 		projectDir: projectPath,
@@ -24,19 +30,20 @@ func FromYAML(src *config.Target, build *config.Build, projectPath string) *Sour
 	if s.Build == nil {
 		s.Build = build
 	}
+	s.init()
 	return s
 }
 
+func FromYAML(src *config.Target, build *config.Build, projectPath string) *Source {
+	return newSource(src, build, projectPath, true)
+}
+
 func FromPath(srcPath string, build *config.Build, projectDir string) *Source {
-	return &Source{
-		Target: &config.Target{
-			Source:  srcPath,
-			Package: false,
-			Build:   build,
-		},
-		projectDir: projectDir,
-		fromYaml:   false,
-	}
+	return newSource(&config.Target{
+		Source:  srcPath,
+		Package: false,
+		Build:   build,
+	}, build, projectDir, false)
 }
 
 func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
@@ -101,4 +108,18 @@ func (s *Source) Match(target string) bool {
 		return true
 	}
 	return s.AbsPath() == filepath.Join(s.projectDir, target)
+}
+
+func (s *Source) init() {
+	if file, err := os.OpenFile(s.AbsPath(), os.O_RDONLY, os.ModePerm); err != nil {
+		s.sourceType = -1
+		s.targetType = -1
+		return
+	} else {
+		file.Seek(124, io.SeekStart)
+		binary.Read(file, binary.LittleEndian, &s.sourceType)
+		file.Seek(132, io.SeekStart)
+		binary.Read(file, binary.LittleEndian, &s.targetType)
+		file.Close()
+	}
 }
