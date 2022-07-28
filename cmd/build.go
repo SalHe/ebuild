@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
+	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
 	"github.com/SalHe/ebuild/utils"
 	"github.com/gookit/color"
@@ -16,7 +17,7 @@ import (
 const enableEclConcurrency = false
 
 var buildCmd = cobra.Command{
-	Use:     "build",
+	Use:     "build [构建目标...]",
 	Short:   "根据配置构建目标",
 	Long:    "根据配置构建目标，未单独配置的目标将采用全局编译器配置，并使用默认输出名等。",
 	PreRunE: loadConfiguration,
@@ -28,7 +29,11 @@ var buildCmd = cobra.Command{
 		!enableEclConcurrency {
 			concurrencyCount = 1
 		}
-		tasks := utils.NewLiveTasks(len(deps.ESrcs), int(concurrencyCount))
+		eSrcs := deps.ESrcs
+		if len(args) > 0 {
+			eSrcs = sources.FilterESrcs(eSrcs, args)
+		}
+		tasks := utils.NewLiveTasks(len(eSrcs), int(concurrencyCount))
 		tasks.Header(func(over bool, allOk bool) string {
 			if !over {
 				return "正在编译...\n\n"
@@ -41,7 +46,7 @@ var buildCmd = cobra.Command{
 			return color.Red.Render("部分编译出错 \n\n")
 		})
 		tasks.OnPreExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
-			src := deps.ESrcs[id]
+			src := eSrcs[id]
 			pwd := deps.PasswordResolver.Resolve(src.Source)
 			args := src.CompileArgs(deps.OutputDir, pwd)
 			cmdLine := color.Gray.Render(toolchain.Ecl(), " ", strings.Join(args, " "))
@@ -49,7 +54,7 @@ var buildCmd = cobra.Command{
 			return nil
 		})
 		tasks.OnExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
-			src := deps.ESrcs[id]
+			src := eSrcs[id]
 			outputPath := src.OutputPath(deps.OutputDir)
 			updateByTemplate := func(c string) {
 				update(fmt.Sprintf("[正在编译][%v] -> [%v] %v", src.DisplayName(), outputPath, c))

@@ -10,14 +10,14 @@ import (
 type Source struct {
 	*config.Target
 
-	buildPath string
-	fromYaml  bool
+	projectDir string
+	fromYaml   bool
 }
 
-func FromYAML(src *config.Target, build *config.Build, buildPath string) *Source {
+func FromYAML(src *config.Target, build *config.Build, projectPath string) *Source {
 	s := &Source{
-		Target:    src,
-		buildPath: buildPath,
+		Target:     src,
+		projectDir: projectPath,
 
 		fromYaml: true,
 	}
@@ -27,15 +27,15 @@ func FromYAML(src *config.Target, build *config.Build, buildPath string) *Source
 	return s
 }
 
-func FromPath(srcPath string, build *config.Build, buildPath string) *Source {
+func FromPath(srcPath string, build *config.Build, projectDir string) *Source {
 	return &Source{
 		Target: &config.Target{
 			Source:  srcPath,
 			Package: false,
 			Build:   build,
 		},
-		buildPath: buildPath,
-		fromYaml:  false,
+		projectDir: projectDir,
+		fromYaml:   false,
 	}
 }
 
@@ -64,7 +64,7 @@ func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
 }
 
 func (s *Source) AbsPath() string {
-	return filepath.Join(s.buildPath, s.Target.Source)
+	return filepath.Join(s.projectDir, s.Target.Source)
 }
 
 func (s *Source) FromConfig() bool {
@@ -82,7 +82,7 @@ func (s *Source) RecoverESrcPath() string {
 
 func (s *Source) OutputPath(outputDir string) string {
 	dir, name, _ := utils.FilePathElements(s.AbsPath())
-	relDir, _ := filepath.Rel(s.buildPath, dir)
+	relDir, _ := filepath.Rel(s.projectDir, dir)
 	if s.Output != "" {
 		name = s.Output
 	}
@@ -94,4 +94,11 @@ func (s *Source) DisplayName() string {
 		return s.Source
 	}
 	return s.Name
+}
+
+func (s *Source) Match(target string) bool {
+	if target == s.Name {
+		return true
+	}
+	return s.AbsPath() == filepath.Join(s.projectDir, target)
 }
