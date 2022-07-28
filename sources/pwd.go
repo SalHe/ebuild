@@ -2,6 +2,7 @@ package sources
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 
 	"gopkg.in/yaml.v3"
@@ -12,9 +13,10 @@ type PasswordResolver interface {
 }
 
 type FilePasswordResolver struct {
-	File   string
-	loaded bool
-	pwd    map[string]string
+	File       string
+	ProjectDir string
+	loaded     bool
+	pwd        map[string]string
 
 	mutex sync.Mutex
 }
@@ -24,10 +26,17 @@ func (f *FilePasswordResolver) Resolve(source string) string {
 	defer f.mutex.Unlock()
 
 	if !f.loaded {
+		var pwd map[string]string
 		if bytes, err := os.ReadFile(f.File); err == nil {
-			yaml.Unmarshal(bytes, &f.pwd)
+			yaml.Unmarshal(bytes, &pwd)
 		}
+
+		f.pwd = make(map[string]string)
+		for file, p := range pwd {
+			f.pwd[filepath.Join(f.ProjectDir, file)] = p
+		}
+
 		f.loaded = true
 	}
-	return f.pwd[source]
+	return f.pwd[filepath.Join(f.ProjectDir, source)]
 }

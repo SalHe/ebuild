@@ -36,7 +36,8 @@ func init() {
 		deps.Vp.SetDefault("e2txt.name-style", "中文")
 
 		deps.PasswordResolver = &sources.FilePasswordResolver{
-			File: filepath.Join(deps.ProjectDir, "ebuild.pwd.yaml"),
+			File:       filepath.Join(deps.ProjectDir, "ebuild.pwd.yaml"),
+			ProjectDir: deps.ProjectDir,
 		}
 	})
 }

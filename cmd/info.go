@@ -5,6 +5,7 @@ import (
 	"github.com/SalHe/ebuild/deps"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 var (
@@ -60,11 +61,9 @@ func showSources() {
 		}
 		fmt.Print(" - ")
 
-		var out string
-		if absolutePath {
-			out = src.AbsPath()
-		} else {
-			out = src.Target.Source
+		out := src.AbsPath()
+		if !absolutePath {
+			out, _ = filepath.Rel(deps.ProjectDir, out)
 		}
 		fmt.Printf(out)
 
