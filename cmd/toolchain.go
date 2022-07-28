@@ -10,7 +10,7 @@ var toolchainCommand = cobra.Command{
 	Use:   "toolchain",
 	Short: "工具链相关",
 	Run: func(cmd *cobra.Command, args []string) {
-		toolchians := []struct {
+		toolchains := []struct {
 			path string
 			name string
 		}{
@@ -18,7 +18,7 @@ var toolchainCommand = cobra.Command{
 			{toolchain.E2Txt(), "e2txt"},
 			{toolchain.Ecl(), "ecl"},
 		}
-		for _, tc := range toolchians {
+		for _, tc := range toolchains {
 			if len(tc.path) > 0 {
 				color.Greenf("✔ %v: %v\n", tc.name, tc.path)
 			} else {
