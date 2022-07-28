@@ -130,14 +130,20 @@ func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []st
 	out(fmt.Sprintf("[开始转换][%s]: %s", srcRel, color.Gray.Render(toolchain.E2Txt()+" "+strings.Join(args, " "))))
 
 	cmd := toolchain.NewE2TxtCmd(toolchain.E2Txt(), args...)
-	cmd.OnLog = func(log string) { out(fmt.Sprintf("[转换中][%s]: %s", srcRel, log)) }
-	cmd.OnError = func(err string) {
+	cmd.OnLog(func(log string) {
+		out(fmt.Sprintf("[转换中][%s]: %s", srcRel, log))
+	})
+	cmd.OnError(func(err string) {
 		wrong = true
 		errTips += "\n\t" + err // 错误提示可以叠加，方便查看过程中出现的所有错误
 		out(fmt.Sprintf("[转换出错][%s]: 转换出错 %v", srcRel, err))
-	}
-	cmd.OnOutDir = func(outDir string) { out(fmt.Sprintf("[转换完成][%s]: 已保存到%s", srcRel, outDir)) }
-	cmd.OnOver = func() { cmdOver <- nil }
+	})
+	cmd.OnOutDir(func(outDir string) {
+		out(fmt.Sprintf("[转换完成][%s]: 已保存到%s", srcRel, outDir))
+	})
+	cmd.OnOver(func() {
+		cmdOver <- nil
+	})
 	cmd.Exec()
 
 	<-cmdOver

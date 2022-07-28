@@ -1,86 +1,61 @@
 package toolchain
 
 import (
-	"bufio"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/transform"
-	"io"
-	"os/exec"
 	"regexp"
 	"strings"
 )
 
-// E2TxtCmd TODO 使用 Exec 实现
 type E2TxtCmd struct {
-	path     string
-	args     []string
-	OnLog    ReportFunc
-	OnError  ReportFunc
-	OnOutDir ReportFunc
-	OnOver   func()
+	exec     *Exec
+	onLog    ReportFunc
+	onError  ReportFunc
+	onOutDir ReportFunc
 }
 
 func reportNothing(s string) {}
 
 func NewE2TxtCmd(path string, args ...string) *E2TxtCmd {
 	return &E2TxtCmd{
-		path:     path,
-		args:     args,
-		OnLog:    reportNothing,
-		OnError:  reportNothing,
-		OnOutDir: reportNothing,
-		OnOver:   func() {},
+		exec:     NewExec(path, args...),
+		onLog:    reportNothing,
+		onError:  reportNothing,
+		onOutDir: reportNothing,
 	}
 }
 
-func (c *E2TxtCmd) Exec() {
-	cmd := exec.Command(c.path, c.args...)
-	stdout, _ := cmd.StdoutPipe()
-	stderr, _ := cmd.StderrPipe()
-	cmd.Start()
-
-	overB := false
-	go func() {
-		cmd.Wait()
-		c.OnOver()
-		overB = true
-	}()
-
-	readToChan := func(pipe io.Reader) <-chan string {
-		reader, incoming := bufio.NewReader(transform.NewReader(pipe, simplifiedchinese.GBK.NewDecoder())), make(chan string)
-		go func() {
-			for !overB {
-				line, _, err := reader.ReadLine()
-				if err != nil {
-					continue
-				}
-				incoming <- string(line)
-			}
-		}()
-		return incoming
-	}
-	stdoutIncoming := readToChan(stdout)
-	stderrIncoming := readToChan(stderr)
-
-	go func() {
-		for !overB {
-			select {
-			case o := <-stdoutIncoming:
-				o = strings.TrimSuffix(o, "\r")
-				if strings.HasPrefix(o, "SUCC:") {
-					c.OnOutDir(formatLog(o[5:]))
-				} else if strings.HasPrefix(o, "ERROR:") {
-					c.OnError(formatLog(o[6:]))
-				} else if o != "LOG:" {
-					c.OnLog(formatLog(o))
-				}
-			case e := <-stderrIncoming:
-				e = strings.TrimPrefix(e, "ERROR:")
-				e = strings.TrimSuffix(e, "\r")
-				c.OnError(formatLog(e))
-			}
+func (c *E2TxtCmd) OnLog(onLog ReportFunc) {
+	c.onLog = onLog
+	c.exec.OnLog(func(log string) {
+		log = strings.TrimSuffix(log, "\r")
+		if strings.HasPrefix(log, "SUCC:") {
+			c.onOutDir(formatLog(log[5:]))
+		} else if strings.HasPrefix(log, "ERROR:") {
+			c.onError(formatLog(log[6:]))
+		} else if log != "LOG:" {
+			c.onLog(formatLog(log))
 		}
-	}()
+	})
+}
+
+func (c *E2TxtCmd) OnError(onError ReportFunc) {
+	c.onError = onError
+	c.exec.OnError(func(e string) {
+		e = strings.TrimPrefix(e, "ERROR:")
+		e = strings.TrimSuffix(e, "\r")
+		c.onError(formatLog(e))
+	})
+}
+
+func (c *E2TxtCmd) OnOutDir(onOutDir ReportFunc) {
+	c.onOutDir = onOutDir
+}
+
+func (c *E2TxtCmd) OnOver(onOver func()) {
+	c.exec.OnOver(onOver)
+}
+
+func (c *E2TxtCmd) Exec() {
+	c.exec.Exec()
 }
 
 var spaces = regexp.MustCompile("\\s{2,}")
