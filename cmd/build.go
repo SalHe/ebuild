@@ -23,11 +23,13 @@ var buildCmd = cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_ = os.MkdirAll(deps.OutputDir, fs.ModePerm)
 
-		over := false
-		allOk := true
-
-		liveLines := utils.NewLiveLines(len(deps.ESrcs))
-		liveLines.Header(func() string {
+		// 并行应该会影响ECL区分到底是哪个窗口
+		if //goland:noinspection GoBoolExpressions
+		!enableEclConcurrency {
+			concurrencyCount = 1
+		}
+		tasks := utils.NewLiveTasks(len(deps.ESrcs), int(concurrencyCount))
+		tasks.Header(func(over bool, allOk bool) string {
 			if !over {
 				return "正在编译...\n\n"
 			}
@@ -38,26 +40,19 @@ var buildCmd = cobra.Command{
 
 			return color.Red.Render("部分编译出错 \n\n")
 		})
-		liveLines.Start()
-
-		// 并行应该会影响ECL区分到底是哪个窗口
-		if //goland:noinspection GoBoolExpressions
-		!enableEclConcurrency {
-			concurrencyCount = 1
-		}
-		tasksExecutor := utils.NewTasksExecutor(len(deps.ESrcs), int(concurrencyCount))
-		tasksExecutor.OnPreExec = func(id int, te *utils.TasksExecutor) {
+		tasks.OnPreExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 			src := deps.ESrcs[id]
 			pwd := deps.PasswordResolver.Resolve(src.Source)
 			args := src.CompileArgs(deps.OutputDir, pwd)
 			cmdLine := color.Gray.Render(toolchain.Ecl(), " ", strings.Join(args, " "))
-			liveLines.Update(id, fmt.Sprintf("[等待编译][%v] -> [%v] %v", src.DisplayName(), src.OutputPath(deps.OutputDir), cmdLine))
-		}
-		tasksExecutor.OnExec = func(id int, te *utils.TasksExecutor) {
+			update(fmt.Sprintf("[等待编译][%v] -> [%v] %v", src.DisplayName(), src.OutputPath(deps.OutputDir), cmdLine))
+			return nil
+		})
+		tasks.OnExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 			src := deps.ESrcs[id]
 			outputPath := src.OutputPath(deps.OutputDir)
-			update := func(c string) {
-				liveLines.Update(id, fmt.Sprintf("[正在编译][%v] -> [%v] %v", src.DisplayName(), outputPath, c))
+			updateByTemplate := func(c string) {
+				update(fmt.Sprintf("[正在编译][%v] -> [%v] %v", src.DisplayName(), outputPath, c))
 			}
 
 			pwd := deps.PasswordResolver.Resolve(src.Source)
@@ -69,13 +64,12 @@ var buildCmd = cobra.Command{
 
 			exec := toolchain.NewEclCmd(toolchain.Ecl(), args...)
 			exec.OnLog(func(log string) {
-				update(log)
+				updateByTemplate(log)
 			})
 			exec.OnError(func(err string) {
-				update(color.Red.Render(err))
+				updateByTemplate(color.Red.Render(err))
 				errorTips += "\n\t" + err
 				compileOk = false
-				allOk = false
 			})
 			exec.OnOver(func() { over <- nil })
 			exec.Exec()
@@ -83,18 +77,16 @@ var buildCmd = cobra.Command{
 			<-over
 
 			if compileOk {
-				liveLines.Update(id, color.Green.Sprintf("✔ [%v] -> [%v]", src.DisplayName(), outputPath))
+				update(color.Green.Sprintf("✔ [%v] -> [%v]", src.DisplayName(), outputPath))
+				return nil
 			} else {
-				liveLines.Update(id, color.Red.Sprintf("❌ [%v] -> [%v] %v", src.DisplayName(), outputPath, errorTips))
+				update(color.Red.Sprintf("❌ [%v] -> [%v] %v", src.DisplayName(), outputPath, errorTips))
+				return errors.New("编译失败")
 			}
-		}
-		tasksExecutor.Start()
+		})
+		tasks.StartAndWait()
 
-		tasksExecutor.Wait()
-		over = true
-		liveLines.Stop()
-
-		if allOk {
+		if tasks.AllOk() {
 			return nil
 		}
 		return errors.New("编译失败")

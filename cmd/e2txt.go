@@ -37,12 +37,8 @@ func init() {
 func runE2Txt(cmd *cobra.Command, args []string) error {
 	isE2Txt := cmd.Use != "txt2e"
 
-	over := false
-	allOk := true
-
-	// 准备多行动态刷新
-	liveLines := utils.NewLiveLines(len(deps.ESrcs))
-	liveLines.Header(func() string {
+	tasks := utils.NewLiveTasks(len(deps.ESrcs), int(concurrencyCount))
+	tasks.Header(func(over bool, allOk bool) string {
 		if !over {
 			return "正在为您转换源文件，请耐心等候：\n\n"
 		}
@@ -57,11 +53,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 			return color.Red.Render("转换结束，恢复源码部分失败，请注意查看！\n\n")
 		}
 	})
-	liveLines.Start()
-
-	// 准备执行任务
-	tasksExecutor := utils.NewTasksExecutor(len(deps.ESrcs), int(concurrencyCount))
-	tasksExecutor.OnPreExec = func(id int, te *utils.TasksExecutor) {
+	tasks.OnPreExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 		var src string
 		if isE2Txt {
 			src = deps.ESrcs[id].AbsPath()
@@ -69,13 +61,17 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 			src = deps.ESrcs[id].ECodeDir()
 		}
 		srcRel, _ := filepath.Rel(deps.ProjectDir, src)
-		liveLines.Update(id, fmt.Sprintf("[等待中][%s]", srcRel))
-	}
-	tasksExecutor.OnExec = func(id int, te *utils.TasksExecutor) {
+		update(fmt.Sprintf("[等待中][%s]", srcRel))
+		return nil
+	})
+	tasks.OnExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+		ok := true
 		src := deps.ESrcs[id]
 		if len(deps.PasswordResolver.Resolve(src.Source)) <= 0 {
-			update := func(o string) { liveLines.Update(id, o) }
-			errorOccurs := func() { allOk = false }
+			// update := func(o string) { liveLines.Update(id, o) }
+			errorOccurs := func() {
+				ok = false
+			}
 			if isE2Txt {
 				convertE2Txt(update, errorOccurs, src)
 			} else {
@@ -85,19 +81,20 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 			srcRel, _ := filepath.Rel(deps.ProjectDir, src.AbsPath())
 			dstRel, _ := filepath.Rel(deps.ProjectDir, src.ECodeDir())
 			if isE2Txt {
-				liveLines.Update(id, color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", srcRel, dstRel))
+				update(color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", srcRel, dstRel))
 			} else {
-				liveLines.Update(id, color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", dstRel, srcRel))
+				update(color.Yellow.Sprintf("❗[%s] -> [%s] 该文件设有密码，已跳过", dstRel, srcRel))
 			}
 		}
-	}
-	tasksExecutor.Start()
 
-	tasksExecutor.Wait()
-	over = true
-	liveLines.Stop()
+		if ok {
+			return nil
+		}
+		return errors.New("转换失败")
+	})
+	tasks.StartAndWait()
 
-	if allOk {
+	if tasks.AllOk() {
 		return nil
 	}
 	return errors.New("转换出错，具体信息请查看输出日志")

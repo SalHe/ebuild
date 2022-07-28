@@ -2,6 +2,8 @@ package utils
 
 import "sync"
 
+type TaskHandlerFunc func(id int, te *TasksExecutor) error
+
 type TasksExecutor struct {
 	tasks int
 
@@ -10,8 +12,8 @@ type TasksExecutor struct {
 
 	started bool
 
-	OnPreExec func(id int, te *TasksExecutor)
-	OnExec    func(id int, te *TasksExecutor)
+	OnPreExec TaskHandlerFunc
+	OnExec    TaskHandlerFunc
 }
 
 func NewTasksExecutor(tasks int, concurrency int) *TasksExecutor {
