@@ -1,21 +1,25 @@
 package sources
 
-type eSourceType int32
-type eBuildTargetType int32
+type ESourceType int32
+type EBuildTargetType int32
 
 const (
-	ESourceSrc  eSourceType = 1
-	ESourceECom eSourceType = 3
+	ESourceSrc  ESourceType = 1
+	ESourceECom ESourceType = 3
 
-	EBuildTargetWindowsForm    eBuildTargetType = 0
-	EBuildTargetWindowsConsole eBuildTargetType = 1
-	EBuildTargetWindowsDll     eBuildTargetType = 2
-	EBuildTargetWindowsECom    eBuildTargetType = 1000
-	EBuildTargetLinuxConsole   eBuildTargetType = 10000
-	EBuildTargetLinuxECom      eBuildTargetType = 11000
+	EBuildTargetWindowsForm    EBuildTargetType = 0
+	EBuildTargetWindowsConsole EBuildTargetType = 1
+	EBuildTargetWindowsDll     EBuildTargetType = 2
+	EBuildTargetWindowsECom    EBuildTargetType = 1000
+	EBuildTargetLinuxConsole   EBuildTargetType = 10000
+	EBuildTargetLinuxECom      EBuildTargetType = 11000
 )
 
-func (b *eBuildTargetType) Ext() string {
+func (b *EBuildTargetType) IsWindowsExecutable() bool {
+	return *b == EBuildTargetWindowsForm || *b == EBuildTargetWindowsConsole
+}
+
+func (b *EBuildTargetType) Ext() string {
 	switch *b {
 	case EBuildTargetWindowsForm:
 	case EBuildTargetWindowsConsole:

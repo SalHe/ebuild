@@ -15,8 +15,8 @@ type Source struct {
 	projectDir string
 	fromYaml   bool
 
-	sourceType eSourceType
-	targetType eBuildTargetType
+	sourceType ESourceType
+	targetType EBuildTargetType
 }
 
 func newSource(src *config.Target, build *config.Build, projectPath string, fromYaml bool) *Source {
@@ -24,7 +24,7 @@ func newSource(src *config.Target, build *config.Build, projectPath string, from
 		Target:     src,
 		projectDir: projectPath,
 
-		fromYaml: true,
+		fromYaml: fromYaml,
 	}
 	if s.Build == nil {
 		s.Build = build
@@ -51,7 +51,9 @@ func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
 	if s.Package {
 		args = append(args, "-p")
 	} else {
-		args = append(args, s.Build.Compiler.Args(s.CompileConfig, s.CompileDescription)...)
+		if s.Build != nil {
+			args = append(args, s.Build.Compiler.Args(s.CompileConfig, s.CompileDescription)...)
+		}
 		if len(pwd) > 0 {
 			args = append(args, "-pwd", pwd)
 		}
@@ -61,6 +63,9 @@ func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
 }
 
 func (s *Source) AbsPath() string {
+	if filepath.IsAbs(s.Source) {
+		return s.Source
+	}
 	return filepath.Join(s.projectDir, s.Target.Source)
 }
 
@@ -78,6 +83,9 @@ func (s *Source) RecoverESrcPath() string {
 }
 
 func (s *Source) OutputPath(outputDir string) string {
+	if filepath.IsAbs(s.Output) {
+		return s.Output
+	}
 	dir, name, _ := utils.FilePathElements(s.AbsPath())
 	relDir, _ := filepath.Rel(s.projectDir, dir)
 	if s.Output != "" {
@@ -112,4 +120,12 @@ func (s *Source) init() {
 		binary.Read(file, binary.LittleEndian, &s.targetType)
 		file.Close()
 	}
+}
+
+func (s *Source) SourceType() ESourceType {
+	return s.sourceType
+}
+
+func (s *Source) TargetType() EBuildTargetType {
+	return s.targetType
 }

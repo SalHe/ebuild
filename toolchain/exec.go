@@ -14,6 +14,7 @@ type ExitFunc func(code int)
 type Exec struct {
 	path    string
 	args    []string
+	over    chan interface{}
 	onLog   ReportFunc
 	onError ReportFunc
 	onExit  ExitFunc
@@ -40,6 +41,7 @@ func NewExec(path string, args ...string) *Exec {
 	return &Exec{
 		path:    path,
 		args:    args,
+		over:    make(chan interface{}),
 		onLog:   reportNothing,
 		onError: reportNothing,
 		onExit:  func(code int) {},
@@ -59,6 +61,8 @@ func (c *Exec) Exec() {
 		c.onExit(cmd.ProcessState.ExitCode())
 		c.onOver()
 		overB = true
+
+		c.over <- nil
 	}()
 
 	readToChan := func(pipe io.Reader) <-chan string {
@@ -87,4 +91,8 @@ func (c *Exec) Exec() {
 			}
 		}
 	}()
+}
+
+func (c *Exec) Wait() {
+	<-c.over
 }

@@ -92,3 +92,7 @@ func (c *EclCmd) OnOver(onOver func()) {
 func (c *EclCmd) Exec() {
 	c.exec.Exec()
 }
+
+func (c *EclCmd) Wait() {
+	c.exec.Wait()
+}

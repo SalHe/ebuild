@@ -52,6 +52,7 @@ func initRootCmd() {
 		&e2txtCmd, &txt2eCmd,
 		&buildCmd,
 		&cleanCmd,
+		&runCmd,
 	)
 
 	setMsgTemplate()
