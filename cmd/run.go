@@ -25,6 +25,7 @@ var runCmd = cobra.Command{
 
 当您执行易语言源文件时，请您自行确保源文件的安全性。
 `,
+	Args:    cobra.ExactArgs(1),
 	PreRunE: loadConfiguration,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		scriptOrFile := args[0]
