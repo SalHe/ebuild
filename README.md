@@ -31,8 +31,6 @@
 ### 预览项目信息
 
 ```shell
-# 预览当前项目配置信息
-
 ./ebuild.exe info --project ./example/
 ```
 
@@ -41,14 +39,20 @@
 ### e2txt/txt2e
 
 ```shell
-# 批量将源文件转换到文本格式的代码或将文本格式的代码恢复成易语言源文件
-
 ./ebuild.exe e2txt --project ./example/
 ./ebuild.exe txt2e --project ./example/
 ```
 
 ![e2txt](./docs/imgs/e2txt.gif)
 ![txt2e](./docs/imgs/txt2e.gif)
+
+### 构建
+
+```shell
+./ebuild.exe build --project ./example/
+```
+
+![构建项目](./docs/imgs/build.gif)
 
 ## 引用项目
 
