@@ -5,9 +5,11 @@ import (
 	"strconv"
 )
 
-const EclErrorSuccess = 1
+type EclError int
+
+const EclErrorSuccess EclError = 1
 const (
-	EclErrorOk = -iota
+	EclErrorOk EclError = -iota
 	EclErrorUnknown
 	EclErrorParam
 	EclErrorFileNotFound
@@ -29,7 +31,7 @@ const (
 	EclErrorNotSupportEPkg
 )
 
-var eclErrorTips = map[int]string{
+var eclErrorTips = map[EclError]string{
 	EclErrorSuccess:            "处理成功",
 	EclErrorOk:                 "编译成功", // 未发生错误
 	EclErrorUnknown:            "未定义类型的错误",
@@ -42,27 +44,34 @@ var eclErrorTips = map[int]string{
 	EclErrorCanNotGetMenu:      "无法获取易语言菜单",
 	EclErrorShutdown:           "易语言意外结束",
 	EclErrorStatic:             "静态编译失败",
-	EclErrorBmInfo:             "生成link.ini文件过程中出错",
-	EclErrorBmCompile:          "老版黑月的相关数据无法定位",
-	EclErrorPassword:           "黑月编译失败",
-	EclErrorEC:                 "源码密码不正确",
-	EclErrorELib:               "缺乏易模块",
-	EclErrorStartTimeout:       "缺少支持库",
-	EclErrorCompileTimeout:     "启动易语言超时",
+	EclErrorMakeLinkIni:        "生成link.ini文件过程中出错",
+	EclErrorBmInfo:             "老版黑月的相关数据无法定位",
+	EclErrorBmCompile:          "黑月编译失败",
+	EclErrorPassword:           "源码密码不正确",
+	EclErrorEC:                 "缺乏易模块",
+	EclErrorELib:               "缺少支持库",
+	EclErrorStartTimeout:       "启动易语言超时",
+	EclErrorCompileTimeout:     "编译超时",
 	EclErrorNotSupportEPkg:     "不支持易包编译",
 }
 
-func EclErrorTips(code int) string {
+func (e EclError) IsOk() bool {
+	return e == EclErrorSuccess || e == EclErrorOk
+}
+
+func EclErrorTips(code EclError) string {
 	return eclErrorTips[code]
 }
 
 type EclCmd struct {
-	exec *Exec
+	exec   *Exec
+	onExit ExitFunc
 }
 
 func NewEclCmd(path string, args ...string) *EclCmd {
 	return &EclCmd{
-		exec: NewExec(path, args...),
+		exec:   NewExec(path, args...),
+		onExit: func(code int) {},
 	}
 }
 
@@ -74,7 +83,8 @@ func (c *EclCmd) OnLog(onLog ReportFunc) {
 			sm := eclMatchError.FindStringSubmatch(s)
 			c.exec.onError(sm[2])
 			code, _ := strconv.Atoi(sm[1])
-			c.exec.onExit(code)
+			// c.exec.onExit(code)
+			c.onExit(code)
 		} else {
 			onLog(s)
 		}
@@ -87,6 +97,11 @@ func (c *EclCmd) OnError(onError ReportFunc) {
 
 func (c *EclCmd) OnOver(onOver func()) {
 	c.exec.OnOver(onOver)
+}
+
+func (c *EclCmd) OnExit(onExit ExitFunc) {
+	c.onExit = onExit
+	c.exec.OnExit(onExit)
 }
 
 func (c *EclCmd) Exec() {

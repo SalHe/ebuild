@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -77,10 +78,16 @@ var buildCmd = cobra.Command{
 				errorTips += "\n\t" + err
 				compileOk = false
 			})
-			exec.OnOver(func() { over <- nil })
+			exec.OnExit(func(code int) {
+				eclError := toolchain.EclError(code)
+				if !eclError.IsOk() {
+					tips := toolchain.EclErrorTips(eclError)
+					errorTips += "\n\t" + tips + "(错误代码：" + strconv.Itoa(int(eclError)) + ")"
+					compileOk = false
+				}
+			})
 			exec.Exec()
-
-			<-over
+			exec.Wait()
 
 			if compileOk {
 				update(color.Green.Sprintf("✔ [%v] -> [%v]", src.DisplayName(), outputPath))
