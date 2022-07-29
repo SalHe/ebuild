@@ -46,8 +46,11 @@ func init() {
 }
 
 func isSourceFile(path string) (absPath string, ok bool) {
+	if filepath.Ext(path) != ".e" {
+		return "", false
+	}
 	if !filepath.IsAbs(path) {
-		path = filepath.Join(deps.ProjectDir, path)
+		path, _ = filepath.Abs(path)
 	}
 	if utils.FileExists(path) {
 		return path, true
