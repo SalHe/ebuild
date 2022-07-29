@@ -25,7 +25,7 @@ ebuild clean [flags]
 ### Options inherited from parent commands
 
 ```
-  -b, --project string   指定工程的目录。 (default "E:\\Workspace\\ebuild")
+  -b, --project string   指定工程的目录。默认为当前路径。 (default "E:\\Workspace\\ebuild")
 ```
 
 ### SEE ALSO

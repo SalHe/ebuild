@@ -44,7 +44,7 @@ func init() {
 
 func initRootCmd() {
 	curDir, _ := os.Getwd()
-	rootCmd.PersistentFlags().StringVarP(&deps.ProjectDir, "project", "b", curDir, "指定工程的目录。")
+	rootCmd.PersistentFlags().StringVarP(&deps.ProjectDir, "project", "b", curDir, "指定工程的目录。默认为当前路径。")
 	rootCmd.AddCommand(
 		&initCmd,
 		&infoCmd,

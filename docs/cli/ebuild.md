@@ -10,7 +10,7 @@ ebuild 是一个专注于易语言自动化构建的工具。
 
 ```
   -h, --help             help for ebuild
-  -b, --project string   指定工程的目录。 (default "E:\\Workspace\\ebuild")
+  -b, --project string   指定工程的目录。默认为当前路径。 (default "E:\\Workspace\\ebuild")
 ```
 
 ### SEE ALSO
