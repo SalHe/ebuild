@@ -16,10 +16,14 @@ import (
 var concurrencyCount uint8
 
 var e2txtCmd = cobra.Command{
-	Use:     "e2txt",
-	Short:   "将项目中包含的源文件按照约定配置转换成文本式的代码。",
-	PreRunE: loadConfiguration,
-	RunE:    runE2Txt,
+	Use:   "e2txt",
+	Short: "将项目中包含的源文件按照约定配置转换成文本式的代码。",
+	PreRunE: checkTool(
+		func() string { return toolchain.E2Txt() },
+		"e2txt",
+		loadConfiguration,
+	),
+	RunE: runE2Txt,
 }
 
 var txt2eCmd = e2txtCmd

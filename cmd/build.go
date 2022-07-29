@@ -19,10 +19,14 @@ import (
 const enableEclConcurrency = false
 
 var buildCmd = cobra.Command{
-	Use:     "build [构建目标...]",
-	Short:   "根据配置构建目标",
-	Long:    "根据配置构建目标，未单独配置的目标将采用全局编译器配置，并使用默认输出名等。",
-	PreRunE: loadConfiguration,
+	Use:   "build [构建目标...]",
+	Short: "根据配置构建目标",
+	Long:  "根据配置构建目标，未单独配置的目标将采用全局编译器配置，并使用默认输出名等。",
+	PreRunE: checkTool(
+		func() string { return toolchain.Ecl() },
+		"ecl",
+		loadConfiguration,
+	),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_ = os.MkdirAll(deps.OutputDir, fs.ModePerm)
 

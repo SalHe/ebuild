@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/sources"
+	"github.com/SalHe/ebuild/utils"
 	"github.com/mattn/go-zglob"
 	"github.com/spf13/cobra"
 	"path"
@@ -80,4 +81,13 @@ func scanEFiles() map[string]int {
 	searchAndSet(deps.C.ExcludeBuilds, typeNoBuild)
 
 	return eSrc
+}
+
+func checkTool(path func() string, description string, inner func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if !utils.FileExists(path()) {
+			return errors.New(fmt.Sprintf("未找到 %v", description))
+		}
+		return inner(cmd, args)
+	}
 }
