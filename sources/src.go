@@ -51,7 +51,7 @@ func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
 	if s.Package {
 		args = append(args, "-p")
 	} else {
-		if s.Build != nil {
+		if s.TargetType() != EBuildTargetWindowsECom && s.TargetType() != EBuildTargetLinuxECom && s.Build != nil {
 			args = append(args, s.Build.Compiler.Args(s.CompileConfig, s.CompileDescription)...)
 		}
 		if len(pwd) > 0 {
