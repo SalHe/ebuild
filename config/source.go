@@ -1,21 +1,11 @@
 package config
 
+import "strings"
+
 type CompilerType string
 
-func (c *CompilerType) HasChanged() bool {
-	return true
-}
-
-func (c *CompilerType) Name() string {
-	return "compiler"
-}
-
-func (c *CompilerType) ValueString() string {
-	return string(*c)
-}
-
-func (c *CompilerType) ValueType() string {
-	return "string"
+func (c *CompilerType) IsBM() bool {
+	return strings.HasPrefix(string(*c), "黑月")
 }
 
 const (
@@ -38,20 +28,30 @@ type Target struct {
 	Package            bool   `mapstructure:"package"` // 是否为易包
 }
 
-func (c *CompilerType) Args() []string {
+func (c *CompilerType) Args(config string, description string) (args []string) {
 	switch *c {
 	case CompilerBlackMoon:
-		return []string{"-bm"}
+		args = []string{"-bm"}
 	case CompilerBlackMoonAsm:
-		return []string{"-bm0"}
+		args = []string{"-bm0"}
 	case CompilerBlackMoonCPP:
-		return []string{"-bm1"}
+		args = []string{"-bm1"}
 	case CompilerBlackMoonMFC:
-		return []string{"-bm2"}
+		args = []string{"-bm2"}
 	case CompilerStatic:
-		return []string{"-s"}
+		args = []string{"-s"}
 	case CompilerIndependent:
-		return []string{"-d"}
+		args = []string{"-d"}
 	}
-	return []string{}
+
+	if c.IsBM() {
+		if len(config) > 0 {
+			args = append(args, "-bmcfg", config)
+		}
+		if len(description) > 0 {
+			args = append(args, "-bmdesc", description)
+		}
+	}
+
+	return
 }

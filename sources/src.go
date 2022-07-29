@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Source struct {
@@ -52,16 +51,7 @@ func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
 	if s.Package {
 		args = append(args, "-p")
 	} else {
-		args = append(args, s.Build.Compiler.Args()...)
-		if strings.HasPrefix(string(s.Build.Compiler), "-bm") {
-			if len(s.CompileConfig) > 0 {
-				args = append(args, "-bmcfg", s.CompileConfig)
-			}
-			if len(s.CompileDescription) > 0 {
-				args = append(args, "-bmdesc", s.CompileDescription)
-			}
-		}
-
+		args = append(args, s.Build.Compiler.Args(s.CompileConfig, s.CompileDescription)...)
 		if len(pwd) > 0 {
 			args = append(args, "-pwd", pwd)
 		}
