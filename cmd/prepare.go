@@ -35,28 +35,37 @@ func loadSources() {
 	loadSourceConfig(eFiles)
 }
 
-func loadSourceConfig(eFiles map[string]bool) {
+const (
+	typeHandled = 0
+	typeIgnore  = 0
+	typeNormal  = 1
+	typeNoBuild = 2
+)
+
+func loadSourceConfig(eFiles map[string]int) {
 	var finalSources []*sources.Source
 
 	for _, source := range deps.C.Targets {
 		finalSrc := sources.FromYAML(source, deps.C.Build, deps.ProjectDir)
 		finalSources = append(finalSources, finalSrc)
-		eFiles[finalSrc.AbsPath()] = false
+		eFiles[finalSrc.AbsPath()] = typeHandled
 	}
 
 	for p, keep := range eFiles {
-		if keep {
+		if //goland:noinspection GoBoolExpressions
+		keep != typeHandled && keep != typeIgnore {
+			noBuild := keep == typeNoBuild
 			relPath, _ := filepath.Rel(deps.ProjectDir, p)
-			finalSources = append(finalSources, sources.FromPath(relPath, deps.C.Build, deps.ProjectDir))
+			finalSources = append(finalSources, sources.FromPath(relPath, deps.C.Build, deps.ProjectDir, noBuild))
 		}
 	}
 
 	deps.ESrcs = finalSources
 }
 
-func scanEFiles() map[string]bool {
-	eSrc := make(map[string]bool)
-	searchAndSet := func(patterns []string, keep bool) {
+func scanEFiles() map[string]int {
+	eSrc := make(map[string]int)
+	searchAndSet := func(patterns []string, keep int) {
 		for _, v := range patterns {
 			searchPattern := path.Join(deps.ProjectDir, v)
 			files, _ := zglob.Glob(searchPattern)
@@ -66,8 +75,9 @@ func scanEFiles() map[string]bool {
 			}
 		}
 	}
-	searchAndSet(deps.C.Includes, true)
-	searchAndSet(deps.C.Excludes, false)
+	searchAndSet(deps.C.Includes, typeNormal)
+	searchAndSet(deps.C.Excludes, typeIgnore)
+	searchAndSet(deps.C.ExcludeBuilds, typeNoBuild)
 
 	return eSrc
 }

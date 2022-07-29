@@ -1,12 +1,13 @@
 package config
 
 type Config struct {
-	Project  *Project  `mapstructure:"project"`
-	Includes []string  `mapstructure:"includes"`
-	Excludes []string  `mapstructure:"excludes"`
-	E2Txt    *E2Txt    `mapstructure:"e2txt"`
-	Build    *Build    `mapstructure:"build"`
-	Targets  []*Target `mapstructure:"targets"`
+	Project       *Project  `mapstructure:"project"`
+	Includes      []string  `mapstructure:"includes"`
+	Excludes      []string  `mapstructure:"excludes"`
+	ExcludeBuilds []string  `mapstructure:"exclude-builds"` // 不被用于构建目标的源文件
+	E2Txt         *E2Txt    `mapstructure:"e2txt"`
+	Build         *Build    `mapstructure:"build"`
+	Targets       []*Target `mapstructure:"targets"`
 }
 
 type Project struct {

@@ -72,7 +72,7 @@ func execESourceFile(file string) error {
 
 	outputDir := ""
 
-	source := sources.FromPath(file, nil, deps.ProjectDir)
+	source := sources.FromPath(file, nil, deps.ProjectDir, true)
 	source.Output = exeTemp.Name()
 	targetType := source.TargetType()
 	if source.SourceType() != sources.ESourceSrc || !targetType.IsWindowsExecutable() {

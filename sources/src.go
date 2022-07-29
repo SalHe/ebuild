@@ -17,14 +17,17 @@ type Source struct {
 
 	sourceType ESourceType
 	targetType EBuildTargetType
+
+	noBuild bool
 }
 
-func newSource(src *config.Target, build *config.Build, projectPath string, fromYaml bool) *Source {
+func newSource(src *config.Target, build *config.Build, projectPath string, fromYaml bool, noBuild bool) *Source {
 	s := &Source{
 		Target:     src,
 		projectDir: projectPath,
 
 		fromYaml: fromYaml,
+		noBuild:  noBuild,
 	}
 	if s.Build == nil {
 		s.Build = build
@@ -34,15 +37,15 @@ func newSource(src *config.Target, build *config.Build, projectPath string, from
 }
 
 func FromYAML(src *config.Target, build *config.Build, projectPath string) *Source {
-	return newSource(src, build, projectPath, true)
+	return newSource(src, build, projectPath, true, false)
 }
 
-func FromPath(srcPath string, build *config.Build, projectDir string) *Source {
+func FromPath(srcPath string, build *config.Build, projectDir string, noBuild bool) *Source {
 	return newSource(&config.Target{
 		Source:  srcPath,
 		Package: false,
 		Build:   build,
-	}, build, projectDir, false)
+	}, build, projectDir, false, noBuild)
 }
 
 func (s *Source) CompileArgs(outputDir string, pwd string) (args []string) {
@@ -128,4 +131,8 @@ func (s *Source) SourceType() ESourceType {
 
 func (s *Source) TargetType() EBuildTargetType {
 	return s.targetType
+}
+
+func (s *Source) NoBuild() bool {
+	return s.noBuild
 }

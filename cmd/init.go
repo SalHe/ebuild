@@ -26,6 +26,8 @@ excludes:
   - '**/*.代码/**.e'
 includes:
   - '**/*.e'
+exclude-builds:
+  - './scripts/**/*.e' # 脚本文件不纳入'ebuild build'命令中进行自动构建
 e2txt:
   name-style: 中文
   generate-e: true

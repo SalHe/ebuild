@@ -33,8 +33,10 @@ var buildCmd = cobra.Command{
 		}
 		eSrcs := deps.ESrcs
 		if len(args) > 0 {
-			eSrcs = sources.FilterESrcs(eSrcs, args)
+			eSrcs = sources.FilterESrcs(eSrcs, sources.FilterTargets(args))
 		}
+		eSrcs = sources.FilterESrcs(eSrcs, sources.FilterRmNoBuild())
+
 		tasks := utils.NewLiveTasks(len(eSrcs), int(concurrencyCount))
 		tasks.Header(func(over bool, allOk bool) string {
 			if !over {
