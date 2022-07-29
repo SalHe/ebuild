@@ -14,7 +14,8 @@ var cleanCmd = cobra.Command{
 	Short: "清理恢复的源码等工程中间文件。",
 	Long: `清理工程中间文件，包括：
   1. txt2e 中从文本格式代码恢复出来的易语言源文件(*.recover.e，只清理包含在工程源文件和目标中的恢复代码)；
-* 2. e2txt 中从易语言源文件转换成的文本格式代码的文件夹(*.ecode，只清理包含在工程源文件和目标中的恢复代码)。（默认不清理）
+  2. e2txt 中从易语言源文件转换成的文本格式代码的文件夹(\*.ecode，只清理包含在工程源文件和目标中的恢复代码)。*（可选，默认不清理）*
+  3. build 中构建出来的目标文件（实际会清理构建输出文件夹中的所有文件）。
 `,
 	PreRunE: loadConfiguration,
 	Run: func(cmd *cobra.Command, args []string) {

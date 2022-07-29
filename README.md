@@ -22,6 +22,10 @@
 - [ ] 使用易语言程序作为自动化构建脚本
 - [ ] TO BE CONTINUED...
 
+## 命令行帮助
+
+请见[命令行帮助](./docs/cli/ebuild.md)
+
 ## 效果图
 
 ![查看项目信息](./docs/imgs/info.gif)
