@@ -19,7 +19,7 @@ func (c *CompilerType) ValueType() string {
 }
 
 const (
-	CompilerBlackMoon    = "黑月"
+	CompilerBlackMoon    = "黑月编译"
 	CompilerBlackMoonAsm = "黑月汇编"
 	CompilerBlackMoonCPP = "黑月C++"
 	CompilerBlackMoonMFC = "黑月MFC"
