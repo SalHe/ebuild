@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -62,7 +63,7 @@ var buildCmd = cobra.Command{
 
 			pwd := deps.PasswordResolver.Resolve(src.Source)
 			args := src.CompileArgs(deps.OutputDir, pwd)
-			over := make(chan interface{})
+			_ = os.MkdirAll(filepath.Dir(src.OutputPath(deps.OutputDir)), fs.ModePerm)
 
 			errorTips := ""
 			compileOk := true
