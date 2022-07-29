@@ -16,8 +16,8 @@
     - ebuild-out 中构建生成的文件
 - [ ] 检测源文件变化，并自动转换成文本格式的代码
 - [x] 批量构建目标
-  - 全构建
-  - 指定构建目标
+    - 全构建
+    - 指定构建目标
 - [ ] 构建前后动作
 - [ ] 使用易语言程序作为自动化构建脚本
 - [ ] TO BE CONTINUED...
@@ -28,21 +28,27 @@
 
 ## 效果图
 
-![查看项目信息](./docs/imgs/info.gif)
+### 预览项目信息
 
 ```shell
 # 预览当前项目配置信息
 
-./ebuild.exe info --build ./example/
+./ebuild.exe info --project ./example/
 ```
 
-![E2TXT](./docs/imgs/e2txt.gif)
+![查看项目信息](./docs/imgs/info.gif)
+
+### e2txt/txt2e
 
 ```shell
-# 批量将源文件转换到文本格式的代码
+# 批量将源文件转换到文本格式的代码或将文本格式的代码恢复成易语言源文件
 
-./ebuild.exe e2txt --build ./example/
+./ebuild.exe e2txt --project ./example/
+./ebuild.exe txt2e --project ./example/
 ```
+
+![e2txt](./docs/imgs/e2txt.gif)
+![txt2e](./docs/imgs/txt2e.gif)
 
 ## 引用项目
 
