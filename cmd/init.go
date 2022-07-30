@@ -20,14 +20,31 @@ project:
   author: SalHe
   repository: https://github.com/SalHe/ebuild
   homepage: https://github.com/SalHe
+scripts:
+  show-envs: |
+    @echo off
+    echo EBuild="%EBUILD_EXECUTABLE_PATH%"
+    echo 易语言="%ELANG_PATH%"
+    echo Ecl="%ECL_PATH%"
+    echo E2Txt="%E2Txt_PATH%"
+  get-input: |
+    @echo off
+    @REM 演示如何获取用户输入
+	
+    set /p Username=用户名：
+    set /p Password=密码：
+    
+    echo/
+    echo 您的用户名：%Username%
+    echo 您的密码：%Password%
 excludes:
   - '**/*.recover.e'
   - '**/*.ecode/**.e'
   - '**/*.代码/**.e'
-includes:
-  - '**/*.e'
 exclude-builds:
   - './scripts/**/*.e' # 脚本文件不纳入'ebuild build'命令中进行自动构建
+includes:
+  - '**/*.e'
 e2txt:
   name-style: 中文
   generate-e: true

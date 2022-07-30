@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var runCmd = cobra.Command{
@@ -30,6 +31,8 @@ var runCmd = cobra.Command{
 	PreRunE: loadConfiguration,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		scriptOrFile := args[0]
+
+		// TODO 将命令行额外参数传递给脚本
 
 		environ := env.NewEnv()
 
@@ -50,17 +53,32 @@ var runCmd = cobra.Command{
 
 			exec = toolchain.NewExec(exePath)
 		} else {
-			// TODO 实现执行脚本
-			fmt.Println("执行脚本：" + scriptOrFile + " （等待实现）")
-			exec = toolchain.NewExec("")
-			exec.SetGbk(false)
+			if cmdContent, ok := deps.C.Scripts[scriptOrFile]; ok {
+				if path, err := tempBat(cmdContent); err != nil {
+					return err
+				} else {
+					defer os.Remove(path)
+					color.Yellowln("正在执行：" + path)
+					fmt.Println()
+
+					exec = toolchain.NewExec(path)
+					exec.SetGbk(false)
+					exec.ForwardStdin()
+					exec.ReadByLine = false
+				}
+			}
 		}
+
+		if exec == nil {
+			return errors.New("找不到对应的脚本配置或易语言源文件")
+		}
+
 		exec.LoadEnv(environ.EnvMap())
 		exec.OnLog(func(log string) {
-			fmt.Println(log)
+			fmt.Print(log)
 		})
 		exec.OnError(func(err string) {
-			color.Redln(err)
+			color.Redp(err)
 		})
 		exec.OnExit(func(code int) {
 			exitCode = code
@@ -92,6 +110,19 @@ func isSourceFile(path string) (absPath string, ok bool) {
 		return path, true
 	}
 	return "", false
+}
+
+func tempBat(content string) (string, error) {
+	batTemp, err := ioutil.TempFile("", "*.ebuild-run.bat")
+	if err != nil {
+		return "", errors.New("创建临时文件失败")
+	}
+	defer batTemp.Close()
+
+	content = strings.Replace(content, "\n", "\r\n", -1)
+	batTemp.WriteString(content)
+
+	return batTemp.Name(), nil
 }
 
 func quickBuildESourceFile(file string) (string, *sources.Source, error) {

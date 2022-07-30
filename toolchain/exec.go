@@ -24,7 +24,8 @@ type Exec struct {
 
 	gbk bool
 
-	cmd *exec.Cmd
+	cmd        *exec.Cmd
+	ReadByLine bool
 }
 
 func (c *Exec) SetGbk(gbk bool) {
@@ -35,10 +36,15 @@ func (c *Exec) OnExit(onExit ExitFunc) {
 	c.onExit = onExit
 }
 
+// OnLog 设置接收来自标准输出的内容回调。
+// 当设置回调后如果 ReadByLine 为 true，回调接收的一行输出内容一定使没有行结束符的。
+// 然而，当 ReadByLine 为 false 时，回调接收的一定是原始的内容。OnError 类似。
 func (c *Exec) OnLog(onLog ReportFunc) {
 	c.onLog = onLog
 }
 
+// OnError 设置接收来自标准错误输出的内容回调。
+// 行为与 OnLog 类似。
 func (c *Exec) OnError(onError ReportFunc) {
 	c.onError = onError
 }
@@ -56,7 +62,9 @@ func NewExec(path string, args ...string) *Exec {
 		onError: reportNothing,
 		onExit:  func(code int) {},
 		onOver:  func() {},
-		cmd:     exec.Command(path, args...),
+
+		cmd:        exec.Command(path, args...),
+		ReadByLine: true,
 
 		gbk: true,
 	}
@@ -89,11 +97,20 @@ func (c *Exec) Exec() {
 		reader, incoming := bufio.NewReader(newReader), make(chan string)
 		go func() {
 			for !overB {
-				line, _, err := reader.ReadLine()
+				var bytes []byte
+				var err error = nil
+				if c.ReadByLine {
+					bytes, _, err = reader.ReadLine()
+				} else {
+					bytes = make([]byte, 1024)
+					size := 0
+					size, err = reader.Read(bytes)
+					bytes = bytes[:size]
+				}
 				if err != nil {
 					continue
 				}
-				incoming <- string(line)
+				incoming <- string(bytes)
 			}
 		}()
 		return incoming
@@ -121,4 +138,8 @@ func (c *Exec) LoadEnv(env map[string]string) {
 	for key, value := range env {
 		c.cmd.Env = append(c.cmd.Env, fmt.Sprintf("%v=%v", key, value))
 	}
+}
+
+func (c *Exec) ForwardStdin() {
+	c.cmd.Stdin = os.Stdin
 }
