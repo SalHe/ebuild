@@ -61,6 +61,10 @@ const (
 *.recover.e
 ebuild.pwd.yaml
 
+# 易语言产生的备份源码文件
+*.bak
+
+
 # 编译输出
 ebuild-out/`
 
