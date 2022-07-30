@@ -22,6 +22,12 @@ scripts:
     echo/
     echo 您的用户名：%Username%
     echo 您的密码：%Password%
+  cmd-args: |
+    @echo off
+    echo arg0=%0
+    echo arg1=%1
+    echo arg2=%2
+    echo arg3=%3
 excludes:
   - '**/*.recover.e'
   - '**/*.ecode/**.e'

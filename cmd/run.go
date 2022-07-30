@@ -27,12 +27,17 @@ var runCmd = cobra.Command{
 
 当您执行易语言源文件时，请您自行确保源文件的安全性。
 `,
-	Args:    cobra.ExactArgs(1),
+	Args: cobra.MinimumNArgs(1),
+	FParseErrWhitelist: cobra.FParseErrWhitelist{
+		UnknownFlags: true,
+	},
 	PreRunE: loadConfiguration,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		scriptOrFile := args[0]
-
-		// TODO 将命令行额外参数传递给脚本
+		var additionalArgs []string
+		if len(args) > 0 {
+			additionalArgs = args[1:]
+		}
 
 		environ := env.NewEnv()
 
@@ -51,7 +56,7 @@ var runCmd = cobra.Command{
 			color.Yellowf("编译成功，开始执行 [%v]\n", exePath)
 			fmt.Println()
 
-			exec = toolchain.NewExec(exePath)
+			exec = toolchain.NewExec(exePath, additionalArgs...)
 		} else {
 			if cmdContent, ok := deps.C.Scripts[scriptOrFile]; ok {
 				if path, err := tempBat(cmdContent); err != nil {
@@ -61,10 +66,8 @@ var runCmd = cobra.Command{
 					color.Yellowln("正在执行：" + path)
 					fmt.Println()
 
-					exec = toolchain.NewExec(path)
+					exec = toolchain.NewExec(path, additionalArgs...)
 					exec.SetGbk(false)
-					exec.ForwardStdin()
-					exec.ReadByLine = false
 				}
 			}
 		}
@@ -72,6 +75,9 @@ var runCmd = cobra.Command{
 		if exec == nil {
 			return errors.New("找不到对应的脚本配置或易语言源文件")
 		}
+
+		exec.ForwardStdin()     // 转发标准输入
+		exec.ReadByLine = false // 由于是自定义的脚本，所以可能输出不完全是按行输出的
 
 		exec.LoadEnv(environ.EnvMap())
 		exec.OnLog(func(log string) {
