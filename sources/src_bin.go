@@ -1,7 +1,28 @@
 package sources
 
+import "strconv"
+
 type ESourceType int32
 type EBuildTargetType int32
+
+func (b *EBuildTargetType) String() string {
+	switch *b {
+	case EBuildTargetWindowsForm:
+		return "WinForm"
+	case EBuildTargetWindowsConsole:
+		return "WinConsole"
+	case EBuildTargetWindowsDll:
+		return "WinDll"
+	case EBuildTargetWindowsECom:
+		return "WinEc"
+	case EBuildTargetLinuxECom:
+		return "LinuxEc"
+	case EBuildTargetLinuxConsole:
+		return "LinuxConsole"
+	default:
+		return "(Unknown:" + strconv.Itoa(int(*b)) + ")"
+	}
+}
 
 const (
 	ESourceSrc  ESourceType = 1

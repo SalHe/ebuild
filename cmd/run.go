@@ -7,6 +7,7 @@ import (
 	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
 	"github.com/SalHe/ebuild/utils"
+	"github.com/SalHe/ebuild/utils/env"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -29,13 +30,48 @@ var runCmd = cobra.Command{
 	PreRunE: loadConfiguration,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		scriptOrFile := args[0]
+
+		environ := env.NewEnv()
+
+		var exec *toolchain.Exec
+		var exitCode int
 		if path, yes := isSourceFile(scriptOrFile); yes {
-			return execESourceFile(path)
+			outputDir, source, err := quickBuildESourceFile(path)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println()
+			exePath := source.OutputPath(outputDir)
+			defer os.Remove(exePath)
+
+			color.Yellowf("编译成功，开始执行 [%v]\n", exePath)
+			fmt.Println()
+
+			exec = toolchain.NewExec(exePath)
 		} else {
 			// TODO 实现执行脚本
 			fmt.Println("执行脚本：" + scriptOrFile + " （等待实现）")
-			return nil
+			exec = toolchain.NewExec("")
+			exec.SetGbk(false)
 		}
+		exec.LoadEnv(environ.EnvMap())
+		exec.OnLog(func(log string) {
+			fmt.Println(log)
+		})
+		exec.OnError(func(err string) {
+			color.Redln(err)
+		})
+		exec.OnExit(func(code int) {
+			exitCode = code
+		})
+		exec.Exec()
+		exec.Wait()
+
+		if exitCode != 0 {
+			return errors.New(fmt.Sprintf("退出代码：%v", exitCode))
+		}
+		return nil
 	},
 }
 
@@ -58,17 +94,15 @@ func isSourceFile(path string) (absPath string, ok bool) {
 	return "", false
 }
 
-func execESourceFile(file string) error {
+func quickBuildESourceFile(file string) (string, *sources.Source, error) {
 	exeTemp, err := ioutil.TempFile("", "*.ebuild-run.exe")
 	if err != nil {
-		return errors.New("创建临时文件失败")
+		return "", nil, errors.New("创建临时文件失败")
 	}
 	exeTemp.Close()
 
 	fmt.Println()
 	color.Redf("即将执行 [%v] (请您自行确保源文件的安全性)\n", file)
-
-	defer os.Remove(exeTemp.Name())
 
 	outputDir := ""
 
@@ -76,36 +110,15 @@ func execESourceFile(file string) error {
 	source.Output = exeTemp.Name()
 	targetType := source.TargetType()
 	if source.SourceType() != sources.ESourceSrc || !targetType.IsWindowsExecutable() {
-		return errors.New("源文件必须编译为Windows可执行程序")
+		return "", nil, errors.New("源文件必须编译为Windows可执行程序")
 	}
 	compileOk := compileESource(source, verbose, outputDir)
 
 	if !compileOk {
-		return errors.New("编译源文件失败")
+		return "", nil, errors.New("编译源文件失败")
 	}
 
-	fmt.Println()
-	color.Yellowf("编译成功，开始执行 [%v]\n", source.OutputPath(outputDir))
-	fmt.Println()
-
-	exitCode := 0
-	exec := toolchain.NewExec(source.OutputPath(outputDir))
-	exec.OnLog(func(log string) {
-		fmt.Println(log)
-	})
-	exec.OnError(func(err string) {
-		color.Redln(err)
-	})
-	exec.OnExit(func(code int) {
-		exitCode = code
-	})
-	exec.Exec()
-	exec.Wait()
-
-	if exitCode != 0 {
-		return errors.New(fmt.Sprintf("退出代码：%v", exitCode))
-	}
-	return nil
+	return outputDir, source, nil
 }
 
 func compileESource(source *sources.Source, verbose bool, outputDir string) bool {

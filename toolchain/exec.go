@@ -2,9 +2,11 @@ package toolchain
 
 import (
 	"bufio"
+	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io"
+	"os"
 	"os/exec"
 )
 
@@ -19,6 +21,14 @@ type Exec struct {
 	onError ReportFunc
 	onExit  ExitFunc
 	onOver  func()
+
+	gbk bool
+
+	cmd *exec.Cmd
+}
+
+func (c *Exec) SetGbk(gbk bool) {
+	c.gbk = gbk
 }
 
 func (c *Exec) OnExit(onExit ExitFunc) {
@@ -46,19 +56,22 @@ func NewExec(path string, args ...string) *Exec {
 		onError: reportNothing,
 		onExit:  func(code int) {},
 		onOver:  func() {},
+		cmd:     exec.Command(path, args...),
+
+		gbk: true,
 	}
 }
 
 func (c *Exec) Exec() {
-	cmd := exec.Command(c.path, c.args...)
-	stdout, _ := cmd.StdoutPipe()
-	stderr, _ := cmd.StderrPipe()
-	cmd.Start()
+	c.cmd.Env = append(os.Environ(), c.cmd.Env...)
+	stdout, _ := c.cmd.StdoutPipe()
+	stderr, _ := c.cmd.StderrPipe()
+	c.cmd.Start()
 
 	overB := false
 	go func() {
-		cmd.Wait()
-		c.onExit(cmd.ProcessState.ExitCode())
+		c.cmd.Wait()
+		c.onExit(c.cmd.ProcessState.ExitCode())
 		c.onOver()
 		overB = true
 
@@ -66,7 +79,14 @@ func (c *Exec) Exec() {
 	}()
 
 	readToChan := func(pipe io.Reader) <-chan string {
-		reader, incoming := bufio.NewReader(transform.NewReader(pipe, simplifiedchinese.GBK.NewDecoder())), make(chan string)
+		var newReader io.Reader
+		if c.gbk {
+			newReader = transform.NewReader(pipe, simplifiedchinese.GBK.NewDecoder())
+		} else {
+			newReader = pipe
+		}
+
+		reader, incoming := bufio.NewReader(newReader), make(chan string)
 		go func() {
 			for !overB {
 				line, _, err := reader.ReadLine()
@@ -95,4 +115,10 @@ func (c *Exec) Exec() {
 
 func (c *Exec) Wait() {
 	<-c.over
+}
+
+func (c *Exec) LoadEnv(env map[string]string) {
+	for key, value := range env {
+		c.cmd.Env = append(c.cmd.Env, fmt.Sprintf("%v=%v", key, value))
+	}
 }
