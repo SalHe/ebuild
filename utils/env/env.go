@@ -1,6 +1,7 @@
 package env
 
 import (
+	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/hooks"
 	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
@@ -15,6 +16,10 @@ const (
 	EnvElangExecutable  = "ELANG_PATH"
 	EnvEclExecutable    = "ECL_PATH"
 	EnvE2TxtExecutable  = "E2TXT_PATH"
+
+	// project
+	EnvEBuildProjectRootDir   = "EBUILD_PROJECT_ROOT_DIR"
+	EnvEBuildProjectOutputDir = "EBUILD_PROJECT_OUTPUT_DIR"
 
 	// hooks
 	EnvEBuildPeriod     = "EBUILD_PERIOD"
@@ -33,6 +38,9 @@ func (e *Env) loadBasicEnv() {
 	e.Set(EnvElangExecutable, toolchain.ELang())
 	e.Set(EnvEclExecutable, toolchain.Ecl())
 	e.Set(EnvE2TxtExecutable, toolchain.E2Txt())
+
+	e.Set(EnvEBuildProjectRootDir, deps.ProjectDir)
+	e.Set(EnvEBuildProjectOutputDir, deps.OutputDir)
 }
 
 func (e *Env) Set(name, value string) {
