@@ -22,6 +22,7 @@ func NewLiveLines(lines int) *LiveLines {
 		lines:  make([]string, lines),
 		done:   make(chan interface{}),
 		update: make(chan bool),
+		header: func() string { return "" },
 		mutex:  &sync.Mutex{},
 	}
 }
@@ -59,8 +60,6 @@ func (l *LiveLines) Start() {
 
 func (l *LiveLines) Stop() {
 	l.done <- nil
-	l.print()
-	l.live.Stop()
 }
 
 func (l *LiveLines) Update(lineNo int, content string) {

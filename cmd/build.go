@@ -51,20 +51,15 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	}
 	eSrcs = sources.FilterESrcs(eSrcs, sources.FilterRmNoBuild())
 
+	// TODO 考虑整理 tasks.LiveTasks 以便避免使用下面的方式Hack日志输出方式
 	liveTasks := tasks.NewLiveTasks(len(eSrcs), int(concurrencyCount))
-	liveTasks.Header(func(over bool, allOk bool) string {
-		if !over {
-			return "正在编译...\n\n"
-		}
-
-		if allOk {
-			return "任务已编译完成 \n\n"
-		}
-
-		return color.Red.Render("部分编译出错 \n\n")
-	})
 	liveTasks.OnPreRun(onPreRunCompileSource(eSrcs))
 	liveTasks.OnRun(onRunCompileSource(eSrcs))
+
+	fmt.Println()
+	fmt.Println("开始编译...")
+	fmt.Println()
+
 	liveTasks.StartAndWait()
 
 	if liveTasks.AllOk() {
@@ -73,7 +68,13 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	return errors.New("编译失败")
 }
 
+func myPrintln(s string) {
+	fmt.Println(s)
+}
+
 func onBuildHooks(src *sources.Source, period hooks.EBuildPeriod, update tasks.UpdateDisplayFunc) {
+	update = myPrintln
+
 	batContent := src.Hooks[string(period)]
 	if len(batContent) <= 0 {
 		return
@@ -81,7 +82,8 @@ func onBuildHooks(src *sources.Source, period hooks.EBuildPeriod, update tasks.U
 
 	originalUpdate := update
 	update = func(display string) {
-		originalUpdate(color.Yellow.Sprintf("[%v][%v] -> [%v] %v", period, src.DisplayName(), src.OutputPath(deps.OutputDir), display))
+		// originalUpdate(color.Yellow.Sprintf("[%v][%v] -> [%v] %v", period, src.DisplayName(), src.OutputPath(deps.OutputDir), display))
+		originalUpdate(color.Yellow.Sprintf("[%v]> [%v]%v", src.DisplayName(), period, display))
 	}
 	update(color.Yellow.Render("准备执行编译周期脚本..."))
 
@@ -108,24 +110,29 @@ func onBuildHooks(src *sources.Source, period hooks.EBuildPeriod, update tasks.U
 
 func onPreRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 	return func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
+		update = myPrintln
+
 		src := eSrcs[id]
-		onBuildHooks(src, hooks.PeriodPreBuild, update)
 
 		pwd := deps.PasswordResolver.Resolve(src.Source)
 		args := src.CompileArgs(deps.OutputDir, pwd)
 		cmdLine := color.Gray.Render(toolchain.Ecl(), " ", strings.Join(args, " "))
-		update(fmt.Sprintf("[等待编译][%v] -> [%v] %v", src.DisplayName(), src.OutputPath(deps.OutputDir), cmdLine))
+		update(fmt.Sprintf("[%v]> %v 等待编译中...", src.DisplayName(), cmdLine))
+
+		onBuildHooks(src, hooks.PeriodPreBuild, update)
 		return nil
 	}
 }
 
 func onRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 	return func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
+		update = myPrintln
+
 		src := eSrcs[id]
 
 		outputPath := src.OutputPath(deps.OutputDir)
 		updateByTemplate := func(c string) {
-			update(fmt.Sprintf("[正在编译][%v] -> [%v] %v", src.DisplayName(), outputPath, c))
+			update(fmt.Sprintf("[%v]> %v", src.DisplayName(), c))
 		}
 
 		pwd := deps.PasswordResolver.Resolve(src.Source)
@@ -157,10 +164,10 @@ func onRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExe
 
 		if compileOk {
 			onBuildHooks(src, hooks.PeriodPostBuild, update)
-			update(color.Green.Sprintf("✔ [%v] -> [%v]", src.DisplayName(), outputPath))
+			update(color.Green.Sprintf("[%v]> ✔ -> [%v]", src.DisplayName(), outputPath))
 			return nil
 		} else {
-			update(color.Red.Sprintf("❌ [%v] -> [%v] %v", src.DisplayName(), outputPath, errorTips))
+			update(color.Red.Sprintf("[%v]> ❌ -> [%v] %v", src.DisplayName(), outputPath, errorTips))
 			return errors.New("编译失败")
 		}
 	}
