@@ -16,6 +16,9 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
 
+      - name: 更新命令行文档
+        run: go run ./entry/gen_doc.go
+
       - name: Build
         run: yarn docs:build
 
