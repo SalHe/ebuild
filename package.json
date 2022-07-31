@@ -12,6 +12,8 @@
     "docs:serve": "vitepress serve docs"
   },
   "devDependencies": {
+    "@types/markdown-it": "^12.2.3",
+    "markdown-it-task-checkbox": "^1.0.6",
     "vitepress": "^1.0.0-alpha.4",
     "vue": "^3.2.37"
   }
