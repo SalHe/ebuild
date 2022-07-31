@@ -13,9 +13,9 @@ import (
 const (
 	// toolchain
 	EnvEBuildExecutable = "EBUILD_EXECUTABLE_PATH"
-	EnvElangExecutable  = "ELANG_PATH"
-	EnvEclExecutable    = "ECL_PATH"
-	EnvE2TxtExecutable  = "E2TXT_PATH"
+	EnvElangDir         = "ELANG_DIR"
+	EnvEclDir           = "ECL_DIR"
+	EnvE2TxtDir         = "E2TXT_DIR"
 
 	// project
 	EnvEBuildProjectRootDir   = "EBUILD_PROJECT_ROOT_DIR"
@@ -35,9 +35,9 @@ type Env struct {
 func (e *Env) loadBasicEnv() {
 	p, _ := filepath.Abs(os.Args[0])
 	e.Set(EnvEBuildExecutable, p)
-	e.Set(EnvElangExecutable, toolchain.ELang())
-	e.Set(EnvEclExecutable, toolchain.Ecl())
-	e.Set(EnvE2TxtExecutable, toolchain.E2Txt())
+	e.Set(EnvElangDir, filepath.Dir(toolchain.ELang()))
+	e.Set(EnvEclDir, filepath.Dir(toolchain.Ecl()))
+	e.Set(EnvE2TxtDir, filepath.Dir(toolchain.E2Txt()))
 
 	e.Set(EnvEBuildProjectRootDir, deps.ProjectDir)
 	e.Set(EnvEBuildProjectOutputDir, deps.OutputDir)

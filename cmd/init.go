@@ -23,9 +23,9 @@ scripts:
   show-envs: |
     @echo off
     echo EBuild="%EBUILD_EXECUTABLE_PATH%"
-    echo 易语言="%ELANG_PATH%"
-    echo Ecl="%ECL_PATH%"
-    echo E2Txt="%E2Txt_PATH%"
+    echo 易语言="%ELANG_DIR%"
+    echo Ecl="%ECL_DIR%"
+    echo E2Txt="%E2Txt_DIR%"
   get-input: |
     @echo off
     @REM 演示如何获取用户输入
