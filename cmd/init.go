@@ -12,8 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var defaultEBuildYaml = `
-project:
+const defaultEBuildYaml = `project:
   name: ebuild-example
   version: "1.0"
   description: 这是由ebuild创建的示例工程。
@@ -30,13 +29,19 @@ scripts:
   get-input: |
     @echo off
     @REM 演示如何获取用户输入
-	
+    
     set /p Username=用户名：
     set /p Password=密码：
     
     echo/
     echo 您的用户名：%Username%
     echo 您的密码：%Password%
+  cmd-args: |
+    @echo off
+    echo arg0=%0
+    echo arg1=%1
+    echo arg2=%2
+    echo arg3=%3
 excludes:
   - '**/*.recover.e'
   - '**/*.ecode/**.e'
@@ -57,6 +62,16 @@ targets:
     # 因为没有为该目标指定编译方式，所以会默认采用工程配置'build.compiler'中的编译方式
     output: Windows窗口程序示例.exe
     package: false # 不是易包
+    hooks:
+      pre-build: |
+        @echo off
+        echo 当前时期：%EBUILD_PERIOD%
+        echo 源文件：%EBUILD_SOURCE_FILE%
+        echo 目标文件：%EBUILD_TARGET_FILE%
+        echo 目标类型：%EBUILD_TARGET_TYPE%
+      post-build: |
+        @echo off
+        copy "%EBUILD_TARGET_FILE%" "%EBUILD_TARGET_FILE%.copy" 
 
   - name: Windows控制台程序——静态编译版
     description: 这是一个简单的控制台程序，会在标准输出输出一句问候。
@@ -71,7 +86,7 @@ targets:
     output: Windows控制台程序示例——黑月版.exe
     build:
       compiler: 黑月编译
-`[1:] // 删除首空行
+`
 
 const (
 	defaultGitignore = `# 恢复出来的易语言源文件和密码文件不纳入版本控制

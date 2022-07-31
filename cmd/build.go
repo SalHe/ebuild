@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SalHe/ebuild/deps"
+	"github.com/SalHe/ebuild/hooks"
 	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
+	"github.com/SalHe/ebuild/utils/env"
 	"github.com/SalHe/ebuild/utils/tasks"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
@@ -71,9 +73,44 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	return errors.New("编译失败")
 }
 
+func onBuildHooks(src *sources.Source, period hooks.EBuildPeriod, update tasks.UpdateDisplayFunc) {
+	batContent := src.Hooks[string(period)]
+	if len(batContent) <= 0 {
+		return
+	}
+
+	originalUpdate := update
+	update = func(display string) {
+		originalUpdate(color.Yellow.Sprintf("[%v][%v] -> [%v] %v", period, src.DisplayName(), src.OutputPath(deps.OutputDir), display))
+	}
+	update(color.Yellow.Render("准备执行编译周期脚本..."))
+
+	batPath, err := tempBat(batContent)
+	defer os.Remove(batPath)
+	if err != nil {
+		return
+	}
+
+	environ := env.NewEnv()
+	environ.ForBuild(src.AbsPath(), src.OutputPath(deps.OutputDir), src.TargetType(), period)
+
+	exec := toolchain.NewExec(batPath)
+	exec.SetGbk(false)
+	exec.LoadEnv(environ.EnvMap())
+	exec.OnStdout(toolchain.ReportFunc(update))
+	exec.OnStderr(func(s string) {
+		update(color.Red.Render(s))
+	})
+	exec.ForwardStdin()
+	exec.Exec()
+	exec.Wait()
+}
+
 func onPreRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 	return func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 		src := eSrcs[id]
+		onBuildHooks(src, hooks.PeriodPreBuild, update)
+
 		pwd := deps.PasswordResolver.Resolve(src.Source)
 		args := src.CompileArgs(deps.OutputDir, pwd)
 		cmdLine := color.Gray.Render(toolchain.Ecl(), " ", strings.Join(args, " "))
@@ -85,6 +122,7 @@ func onPreRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.Tasks
 func onRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 	return func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 		src := eSrcs[id]
+
 		outputPath := src.OutputPath(deps.OutputDir)
 		updateByTemplate := func(c string) {
 			update(fmt.Sprintf("[正在编译][%v] -> [%v] %v", src.DisplayName(), outputPath, c))
@@ -118,6 +156,7 @@ func onRunCompileSource(eSrcs []*sources.Source) func(id int, te *tasks.TasksExe
 		exec.Wait()
 
 		if compileOk {
+			onBuildHooks(src, hooks.PeriodPostBuild, update)
 			update(color.Green.Sprintf("✔ [%v] -> [%v]", src.DisplayName(), outputPath))
 			return nil
 		} else {

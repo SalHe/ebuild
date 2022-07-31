@@ -18,14 +18,15 @@ const (
 )
 
 type Target struct {
-	Name               string `mapstructure:"name"`        // 目标名称，只是一个简单名字介绍
-	Description        string `mapstructure:"description"` // 目标描述
-	Source             string `mapstructure:"source"`      // 约定为相对于 ebuild.yaml 的相对路径
-	Output             string `mapstructure:"output"`
-	Build              *Build `mapstructure:"build"`
-	CompileConfig      string `mapstructure:"compile-config"`
-	CompileDescription string `mapstructure:"compile-description"`
-	Package            bool   `mapstructure:"package"` // 是否为易包
+	Name               string            `mapstructure:"name"`        // 目标名称，只是一个简单名字介绍
+	Description        string            `mapstructure:"description"` // 目标描述
+	Source             string            `mapstructure:"source"`      // 约定为相对于 ebuild.yaml 的相对路径
+	Output             string            `mapstructure:"output"`
+	Build              *Build            `mapstructure:"build"`
+	CompileConfig      string            `mapstructure:"compile-config"`
+	CompileDescription string            `mapstructure:"compile-description"`
+	Package            bool              `mapstructure:"package"` // 是否为易包
+	Hooks              map[string]string `mapstructure:"hooks"`
 }
 
 func (c *CompilerType) Args(config string, description string) (args []string) {

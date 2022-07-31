@@ -48,6 +48,16 @@ targets:
     # 因为没有为该目标指定编译方式，所以会默认采用工程配置'build.compiler'中的编译方式
     output: Windows窗口程序示例.exe
     package: false # 不是易包
+    hooks:
+      pre-build: |
+        @echo off
+        echo 当前时期：%EBUILD_PERIOD%
+        echo 源文件：%EBUILD_SOURCE_FILE%
+        echo 目标文件：%EBUILD_TARGET_FILE%
+        echo 目标类型：%EBUILD_TARGET_TYPE%
+      post-build: |
+        @echo off
+        copy "%EBUILD_TARGET_FILE%" "%EBUILD_TARGET_FILE%.copy" 
 
   - name: Windows控制台程序——静态编译版
     description: 这是一个简单的控制台程序，会在标准输出输出一句问候。
