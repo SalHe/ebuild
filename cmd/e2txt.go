@@ -57,7 +57,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 			return color.Red.Render("转换结束，恢复源码部分失败，请注意查看！\n\n")
 		}
 	})
-	tasks.OnPreExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+	tasks.OnPreRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 		var src string
 		if isE2Txt {
 			src = deps.ESrcs[id].AbsPath()
@@ -68,7 +68,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 		update(fmt.Sprintf("[等待中][%s]", srcRel))
 		return nil
 	})
-	tasks.OnExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+	tasks.OnRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 		ok := true
 		src := deps.ESrcs[id]
 		if len(deps.PasswordResolver.Resolve(src.Source)) <= 0 {
@@ -145,7 +145,7 @@ func execE2TxtCmd(out func(string), errorOccurs func(), srcRel string, args []st
 	cmd.OnOutDir(func(outDir string) {
 		out(fmt.Sprintf("[转换完成][%s]: 已保存到%s", srcRel, outDir))
 	})
-	cmd.OnOver(func() {
+	cmd.OnExit(func(code int) {
 		cmdOver <- nil
 	})
 	cmd.Exec()

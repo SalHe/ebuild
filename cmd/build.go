@@ -53,7 +53,7 @@ var buildCmd = cobra.Command{
 
 			return color.Red.Render("部分编译出错 \n\n")
 		})
-		tasks.OnPreExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+		tasks.OnPreRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 			src := eSrcs[id]
 			pwd := deps.PasswordResolver.Resolve(src.Source)
 			args := src.CompileArgs(deps.OutputDir, pwd)
@@ -61,7 +61,7 @@ var buildCmd = cobra.Command{
 			update(fmt.Sprintf("[等待编译][%v] -> [%v] %v", src.DisplayName(), src.OutputPath(deps.OutputDir), cmdLine))
 			return nil
 		})
-		tasks.OnExec(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+		tasks.OnRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
 			src := eSrcs[id]
 			outputPath := src.OutputPath(deps.OutputDir)
 			updateByTemplate := func(c string) {

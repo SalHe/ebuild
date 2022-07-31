@@ -10,22 +10,40 @@ import (
 	"os/exec"
 )
 
+type LogReader func(reader *bufio.Reader) (bytes []byte, err error)
 type ReportFunc func(string)
 type ExitFunc func(code int)
 
+var (
+	ReadLogByLine LogReader = func(reader *bufio.Reader) (bytes []byte, err error) {
+		bytes, _, err = reader.ReadLine()
+		return
+	}
+	ReadLogRealTime LogReader = func(reader *bufio.Reader) (bytes []byte, err error) {
+		bytes = make([]byte, 1024)
+		size := 0
+		size, err = reader.Read(bytes)
+		bytes = bytes[:size]
+		return
+	}
+)
+
 type Exec struct {
-	path    string
-	args    []string
-	over    chan interface{}
-	onLog   ReportFunc
-	onError ReportFunc
-	onExit  ExitFunc
-	onOver  func()
+	path     string
+	args     []string
+	over     chan interface{}
+	onStdout ReportFunc
+	onStderr ReportFunc
+	onExit   ExitFunc
 
 	gbk bool
 
-	cmd        *exec.Cmd
-	ReadByLine bool
+	cmd       *exec.Cmd
+	logReader LogReader
+}
+
+func (c *Exec) SetLogReader(logReader LogReader) {
+	c.logReader = logReader
 }
 
 func (c *Exec) SetGbk(gbk bool) {
@@ -36,35 +54,25 @@ func (c *Exec) OnExit(onExit ExitFunc) {
 	c.onExit = onExit
 }
 
-// OnLog 设置接收来自标准输出的内容回调。
-// 当设置回调后如果 ReadByLine 为 true，回调接收的一行输出内容一定使没有行结束符的。
-// 然而，当 ReadByLine 为 false 时，回调接收的一定是原始的内容。OnError 类似。
-func (c *Exec) OnLog(onLog ReportFunc) {
-	c.onLog = onLog
+func (c *Exec) OnStdout(onLog ReportFunc) {
+	c.onStdout = onLog
 }
 
-// OnError 设置接收来自标准错误输出的内容回调。
-// 行为与 OnLog 类似。
-func (c *Exec) OnError(onError ReportFunc) {
-	c.onError = onError
-}
-
-func (c *Exec) OnOver(onOver func()) {
-	c.onOver = onOver
+func (c *Exec) OnStderr(onError ReportFunc) {
+	c.onStderr = onError
 }
 
 func NewExec(path string, args ...string) *Exec {
 	return &Exec{
-		path:    path,
-		args:    args,
-		over:    make(chan interface{}),
-		onLog:   reportNothing,
-		onError: reportNothing,
-		onExit:  func(code int) {},
-		onOver:  func() {},
+		path:     path,
+		args:     args,
+		over:     make(chan interface{}),
+		onStdout: reportNothing,
+		onStderr: reportNothing,
+		onExit:   func(code int) {},
 
-		cmd:        exec.Command(path, args...),
-		ReadByLine: true,
+		cmd:       exec.Command(path, args...),
+		logReader: ReadLogByLine,
 
 		gbk: true,
 	}
@@ -80,7 +88,6 @@ func (c *Exec) Exec() {
 	go func() {
 		c.cmd.Wait()
 		c.onExit(c.cmd.ProcessState.ExitCode())
-		c.onOver()
 		overB = true
 
 		c.over <- nil
@@ -97,16 +104,7 @@ func (c *Exec) Exec() {
 		reader, incoming := bufio.NewReader(newReader), make(chan string)
 		go func() {
 			for !overB {
-				var bytes []byte
-				var err error = nil
-				if c.ReadByLine {
-					bytes, _, err = reader.ReadLine()
-				} else {
-					bytes = make([]byte, 1024)
-					size := 0
-					size, err = reader.Read(bytes)
-					bytes = bytes[:size]
-				}
+				bytes, err := c.logReader(reader)
 				if err != nil {
 					continue
 				}
@@ -122,9 +120,9 @@ func (c *Exec) Exec() {
 		for !overB {
 			select {
 			case o := <-stdoutIncoming:
-				c.onLog(o)
+				c.onStdout(o)
 			case e := <-stderrIncoming:
-				c.onError(e)
+				c.onStderr(e)
 			}
 		}
 	}()

@@ -43,6 +43,7 @@ var runCmd = cobra.Command{
 
 		var exec *toolchain.Exec
 		var exitCode int
+		var exePath string
 		if path, yes := isSourceFile(scriptOrFile); yes {
 			outputDir, source, err := quickBuildESourceFile(path)
 			if err != nil {
@@ -50,7 +51,7 @@ var runCmd = cobra.Command{
 			}
 
 			fmt.Println()
-			exePath := source.OutputPath(outputDir)
+			exePath = source.OutputPath(outputDir)
 			defer os.Remove(exePath)
 
 			color.Yellowf("编译成功，开始执行 [%v]\n", exePath)
@@ -76,14 +77,14 @@ var runCmd = cobra.Command{
 			return errors.New("找不到对应的脚本配置或易语言源文件")
 		}
 
-		exec.ForwardStdin()     // 转发标准输入
-		exec.ReadByLine = false // 由于是自定义的脚本，所以可能输出不完全是按行输出的
+		exec.SetLogReader(toolchain.ReadLogRealTime)
+		exec.ForwardStdin() // 转发标准输入
 
 		exec.LoadEnv(environ.EnvMap())
-		exec.OnLog(func(log string) {
+		exec.OnStdout(func(log string) {
 			fmt.Print(log)
 		})
-		exec.OnError(func(err string) {
+		exec.OnStderr(func(err string) {
 			color.Redp(err)
 		})
 		exec.OnExit(func(code int) {

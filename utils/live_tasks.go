@@ -26,8 +26,8 @@ func (l *LiveTasks) Header(header func(over bool, allOk bool) string) {
 	})
 }
 
-func (l *LiveTasks) OnPreExec(handler LiveTasksHandlerFunc) {
-	l.executor.OnPreExec = func(id int, te *TasksExecutor) error {
+func (l *LiveTasks) OnPreRun(handler LiveTasksHandlerFunc) {
+	l.executor.OnPreRun = func(id int, te *TasksExecutor) error {
 		return handler(id, te, l.updateDisplay(id))
 	}
 }
@@ -38,8 +38,8 @@ func (l *LiveTasks) updateDisplay(id int) UpdateDisplayFunc {
 	}
 }
 
-func (l *LiveTasks) OnExec(handler LiveTasksHandlerFunc) {
-	l.executor.OnExec = func(id int, te *TasksExecutor) error {
+func (l *LiveTasks) OnRun(handler LiveTasksHandlerFunc) {
+	l.executor.OnRun = func(id int, te *TasksExecutor) error {
 		err := handler(id, te, l.updateDisplay(id))
 		if err != nil {
 			l.allOk = false

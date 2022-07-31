@@ -12,8 +12,8 @@ type TasksExecutor struct {
 
 	started bool
 
-	OnPreExec TaskHandlerFunc
-	OnExec    TaskHandlerFunc
+	OnPreRun TaskHandlerFunc
+	OnRun    TaskHandlerFunc
 }
 
 func NewTasksExecutor(tasks int, concurrency int) *TasksExecutor {
@@ -37,10 +37,10 @@ func (te *TasksExecutor) Start() {
 		t := t
 		te.wg.Add(1)
 		go func() {
-			te.OnPreExec(t, te)
+			te.OnPreRun(t, te)
 			<-te.concurrency
 
-			te.OnExec(t, te)
+			te.OnRun(t, te)
 			te.concurrency <- nil
 			te.wg.Done()
 		}()

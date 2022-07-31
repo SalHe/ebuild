@@ -78,10 +78,10 @@ func NewEclCmd(path string, args ...string) *EclCmd {
 var eclMatchError = regexp.MustCompile("\\(错误:(-\\d+)\\)(.+)")
 
 func (c *EclCmd) OnLog(onLog ReportFunc) {
-	c.exec.OnLog(func(s string) {
+	c.exec.OnStdout(func(s string) {
 		if eclMatchError.MatchString(s) {
 			sm := eclMatchError.FindStringSubmatch(s)
-			c.exec.onError(sm[2])
+			c.exec.onStderr(sm[2])
 			code, _ := strconv.Atoi(sm[1])
 			// c.exec.onExit(code)
 			c.onExit(code)
@@ -92,11 +92,7 @@ func (c *EclCmd) OnLog(onLog ReportFunc) {
 }
 
 func (c *EclCmd) OnError(onError ReportFunc) {
-	c.exec.OnError(onError)
-}
-
-func (c *EclCmd) OnOver(onOver func()) {
-	c.exec.OnOver(onOver)
+	c.exec.OnStderr(onError)
 }
 
 func (c *EclCmd) OnExit(onExit ExitFunc) {
