@@ -26,7 +26,7 @@
 
 ## 命令行帮助
 
-请见[命令行帮助](./docs/cli/ebuild.md)
+请见[命令行帮助](./cli/ebuild.md)
 
 ## 效果图
 
@@ -36,7 +36,7 @@
 ./ebuild.exe info --project ./example/
 ```
 
-![查看项目信息](./docs/imgs/info.gif)
+![查看项目信息](./imgs/info.gif)
 
 ### e2txt/txt2e
 
@@ -45,8 +45,8 @@
 ./ebuild.exe txt2e --project ./example/
 ```
 
-![e2txt](./docs/imgs/e2txt.gif)
-![txt2e](./docs/imgs/txt2e.gif)
+![e2txt](./imgs/e2txt.gif)
+![txt2e](./imgs/txt2e.gif)
 
 ### 构建
 
@@ -54,7 +54,7 @@
 ./ebuild.exe build --project ./example/
 ```
 
-![构建项目](./docs/imgs/build.gif)
+![构建项目](./imgs/build.gif)
 
 ## 引用项目
 
