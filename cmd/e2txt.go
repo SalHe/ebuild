@@ -6,7 +6,7 @@ import (
 	"github.com/SalHe/ebuild/deps"
 	"github.com/SalHe/ebuild/sources"
 	"github.com/SalHe/ebuild/toolchain"
-	"github.com/SalHe/ebuild/utils"
+	"github.com/SalHe/ebuild/utils/tasks"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 	"path/filepath"
@@ -41,8 +41,8 @@ func init() {
 func runE2Txt(cmd *cobra.Command, args []string) error {
 	isE2Txt := cmd.Use != "txt2e"
 
-	tasks := utils.NewLiveTasks(len(deps.ESrcs), int(concurrencyCount))
-	tasks.Header(func(over bool, allOk bool) string {
+	liveTasks := tasks.NewLiveTasks(len(deps.ESrcs), int(concurrencyCount))
+	liveTasks.Header(func(over bool, allOk bool) string {
 		if !over {
 			return "正在为您转换源文件，请耐心等候：\n\n"
 		}
@@ -57,7 +57,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 			return color.Red.Render("转换结束，恢复源码部分失败，请注意查看！\n\n")
 		}
 	})
-	tasks.OnPreRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+	liveTasks.OnPreRun(func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 		var src string
 		if isE2Txt {
 			src = deps.ESrcs[id].AbsPath()
@@ -68,7 +68,7 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 		update(fmt.Sprintf("[等待中][%s]", srcRel))
 		return nil
 	})
-	tasks.OnRun(func(id int, te *utils.TasksExecutor, update utils.UpdateDisplayFunc) error {
+	liveTasks.OnRun(func(id int, te *tasks.TasksExecutor, update tasks.UpdateDisplayFunc) error {
 		ok := true
 		src := deps.ESrcs[id]
 		if len(deps.PasswordResolver.Resolve(src.Source)) <= 0 {
@@ -96,9 +96,9 @@ func runE2Txt(cmd *cobra.Command, args []string) error {
 		}
 		return errors.New("转换失败")
 	})
-	tasks.StartAndWait()
+	liveTasks.StartAndWait()
 
-	if tasks.AllOk() {
+	if liveTasks.AllOk() {
 		return nil
 	}
 	return errors.New("转换出错，具体信息请查看输出日志")

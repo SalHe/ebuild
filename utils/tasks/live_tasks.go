@@ -1,7 +1,9 @@
-package utils
+package tasks
+
+import "github.com/SalHe/ebuild/utils/lives"
 
 type LiveTasks struct {
-	liveLines *LiveLines
+	liveLines *lives.LiveLines
 	executor  *TasksExecutor
 
 	over  bool
@@ -13,7 +15,7 @@ type LiveTasksHandlerFunc func(id int, te *TasksExecutor, update UpdateDisplayFu
 
 func NewLiveTasks(tasks int, concurrency int) *LiveTasks {
 	return &LiveTasks{
-		liveLines: NewLiveLines(tasks),
+		liveLines: lives.NewLiveLines(tasks),
 		executor:  NewTasksExecutor(tasks, concurrency),
 		allOk:     true,
 		over:      false,
