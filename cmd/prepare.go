@@ -77,8 +77,8 @@ func scanEFiles() map[string]int {
 		}
 	}
 	searchAndSet(deps.C.Includes, typeNormal)
-	searchAndSet(deps.C.Excludes, typeIgnore)
 	searchAndSet(deps.C.ExcludeBuilds, typeNoBuild)
+	searchAndSet(deps.C.Excludes, typeIgnore)
 
 	return eSrc
 }
