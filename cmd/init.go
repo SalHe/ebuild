@@ -89,9 +89,11 @@ targets:
 `
 
 const (
-	defaultGitignore = `# 恢复出来的易语言源文件和密码文件不纳入版本控制
+	defaultGitignore = `
+# 恢复出来的易语言源文件和密码文件不纳入版本控制
 *.recover.e
 ebuild.pwd.yaml
+**/*.ecode/log
 
 # 易语言产生的备份源码文件
 *.bak
@@ -131,7 +133,9 @@ var initCmd = cobra.Command{
 				color.Redln("创建配置文件失败！")
 				os.Exit(1)
 			}
-			os.WriteFile(path.Join(deps.ProjectDir, ".gitignore"), []byte(defaultGitignore), 0666)
+			gitignoreFilePath := path.Join(deps.ProjectDir, ".gitignore")
+			bytes, _ := os.ReadFile(gitignoreFilePath)
+			os.WriteFile(gitignoreFilePath, append(bytes, []byte(defaultGitignore)...), 0666)
 			os.WriteFile(path.Join(deps.ProjectDir, "ebuild.pwd.yaml"), []byte(`Windows窗口程序--带密码.e: 123`), 0666)
 			os.WriteFile(path.Join(deps.ProjectDir, "README.md"), []byte(defaultReadMe), 0666)
 
