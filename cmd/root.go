@@ -12,9 +12,12 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "ebuild",
-	Short:   "ebuild 是一个专注于易语言自动化构建的工具。",
-	Long:    "使用Golang编写的、以 e2txt 和 ecl 作为基础工具的上层构建工具。",
+	Use:   "ebuild",
+	Short: "ebuild 是一个专注于易语言自动化构建的工具。",
+	Long: `ebuild 是一个使用Golang编写的、以 e2txt 和 ecl 作为基础工具，专注于易语言构建自动化的工具。
+
+GitHub：https://github.com/SalHe/ebuild
+官网：	https://salhe.github.io/ebuild/`,
 	Version: "0.0.1",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if projectDir, err := filepath.Abs(deps.ProjectDir); err != nil {
