@@ -11,7 +11,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '使用向导', link: '/README' },
-      { text: '命令行帮助', link: '/cli/ebuild' },
+      { text: '命令行帮助', link: '/cli/' },
       {
         text: '友情链接',
         items: [
