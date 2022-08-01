@@ -16,6 +16,11 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
 
+      - name: 安装golang依赖
+        uses: magnetikonline/action-golang-cache@v3
+        with:
+          go-version-file: go.mod
+
       - name: 更新命令行文档
         run: go run ./entry/gen_doc.go
 
