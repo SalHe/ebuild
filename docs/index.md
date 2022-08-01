@@ -16,13 +16,13 @@ hero:
       text: 查看源码
       link: https://github.com/SalHe/ebuild
 
-# features:
-#   - title: 
-#     details: Feel the speed of Vite. Instant server start and lightning fast HMR that stays fast regardless of the app size.
-#   - title: Designed to be simplicity first
-#     details: With Markdown-centered content, it's built to help you focus on writing and deployed with minimum configuration.
-#   - title: Power of Vue meets Markdown
-#     details: Enhance your content with all the features of Vue in Markdown, while being able to customize your site with Vue.
-#   - title: Fully static yet still dynamic
-#     details: Go wild with true SSG + SPA architecture. Static on page load, but engage users with 100% interactivity from there.
+features:
+  - title: 版本控制
+    details: 可快速将工程中的易语言源代码借助 e2txt 转换成文本格式的代码(或者反向转换)，利于版本控制和多人协同开发.
+  - title: 自动构建
+    details: 使用配置化的方式将易语言源代码纳入工程，且可以自定义构建目标，使用不同的构建细节借助 ecl 去完成源码编译，不需要反复开启易语言编译.
+  - title: 脚本执行
+    details: 可以将工程相关的命令、脚本纳入到工程配置中方便执行，同时还可以使用易语言源文件编写脚本，由 ebuild 自动帮助您编译并执行.
+  - title: 生命周期
+    details: 为工程的构建定义了一些生命周期，您可以在这些生命周期执行一些您想要的工作，比如将文件安装到某处等，方便了您的构建过程.
 ---
