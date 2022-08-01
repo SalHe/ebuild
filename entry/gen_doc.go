@@ -7,12 +7,12 @@ import (
 )
 
 func main() {
-	filePrerenderer := func(s string) string { return "" }
+	filePrepender := func(s string) string { return "" }
 	linkHandler := func(s string) string {
 		s = strings.TrimSuffix(s, ".md")
 		s = strings.ReplaceAll(s, "_", "-")
 		s = "/cli/#" + s
 		return s
 	}
-	doc.GenMarkdownTreeCustom(cmd.RootCommand(), "./docs/cli", filePrerenderer, linkHandler)
+	doc.GenMarkdownTreeCustom(cmd.RootCommand(), "./docs/cli", filePrepender, linkHandler)
 }
