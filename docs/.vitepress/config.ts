@@ -9,6 +9,12 @@ export default defineConfig({
   description: 'EBuild 是一个专注于易语言的构建工具。',
   lastUpdated: true,
   themeConfig: {
+    outlineTitle: '目录',
+    footer: {
+      message: '本开源软件受 MIT 协议保护',
+      copyright: 'Copyright (c) 2022 SalHe Li'
+    },
+
     nav: [
       { text: '使用向导', link: '/README' },
       { text: '命令行帮助', link: '/cli/' },
@@ -46,7 +52,7 @@ export default defineConfig({
       text: '在 GitHub 上编辑'
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/SalHe' },
+      { icon: 'github', link: 'https://github.com/SalHe/ebuild' },
     ],
   },
   markdown: {
