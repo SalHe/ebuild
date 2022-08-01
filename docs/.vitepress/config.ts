@@ -52,7 +52,7 @@ export default defineConfig({
       text: '在 GitHub 上编辑'
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/SalHe' },
+      { icon: 'github', link: 'https://github.com/SalHe/ebuild' },
     ],
   },
   markdown: {
