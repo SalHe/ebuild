@@ -30,7 +30,8 @@ export default defineConfig({
       {
         text: '介绍',
         items: [
-          { text: '什么是 ebuild？', link: '/README' }
+          { text: '什么是 ebuild？', link: '/README' },
+          { text: '安装', link: '/installation' },
         ]
       },
       {
