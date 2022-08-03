@@ -11,4 +11,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }} 
           
-      - run: echo CHANGELOG.md
+      - run: cat CHANGELOG.md
