@@ -13,6 +13,7 @@ jobs:
     - uses: wangyoucao577/go-release-action@v1.30
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        pre_command: go generate -v .
         goos: windows
         goarch: 386
         project_path: "."
