@@ -36,6 +36,13 @@ export default defineConfig({
         ]
       },
       {
+        text: '工程配置',
+        items: [
+          { text: '基本配置', link: '/project/basic' },
+          { text: '工程脚本 - 重复工作', link: '/project/run' },
+        ]
+      },
+      {
         text: '命令行帮助',
         items: cliItems(
           { subCommand: 'init', title: '初始化工程' },
