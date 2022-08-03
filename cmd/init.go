@@ -21,8 +21,8 @@ const defaultEBuildYaml = `project:
   homepage: https://github.com/SalHe
 excludes:
   - '**/*.recover.e'
-  - '**/*.ecode/**.e'
-  - '**/*.代码/**.e'
+  - '**/*.ecode/*.e'
+  - '**/*.代码/*.e'
 exclude-builds:
   - './scripts/**/*.e' # 脚本文件不纳入'ebuild build'命令中进行自动构建
 includes:
