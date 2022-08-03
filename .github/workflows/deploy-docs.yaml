@@ -22,7 +22,7 @@ jobs:
           go-version-file: go.mod
 
       - name: 更新命令行文档
-        run: go run ./entry/gen_doc.go
+        run: go generate main.go && go run ./entry/gen_doc.go
 
       - name: Build
         run: yarn docs:build

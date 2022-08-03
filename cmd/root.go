@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 
 GitHub：https://github.com/SalHe/ebuild
 官网：	https://salhe.github.io/ebuild/`,
-	Version: "0.0.1",
+	Version: deps.Version,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if projectDir, err := filepath.Abs(deps.ProjectDir); err != nil {
 			return errors.New("您输入的路径有误。")
