@@ -33,6 +33,7 @@ export default defineConfig({
           { text: '什么是 ebuild？', link: '/README' },
           { text: '安装', link: '/installation' },
           { text: '第一个工程', link: '/first-project' },
+          { text: '鸣谢', link: '/thanks' },
         ]
       },
       {
@@ -40,6 +41,10 @@ export default defineConfig({
         items: [
           { text: '基本配置', link: '/project/basic' },
           { text: '工程脚本 - 重复工作', link: '/project/run' },
+          { text: 'e2txt配置', link: '/project/e2txt' },
+          { text: '构建配置', link: '/project/build' },
+          { text: '环境变量', link: '/project/environ' },
+          { text: '案例', link: '/project/examples' },
         ]
       },
       {
