@@ -1,14 +1,44 @@
 name: Changelog
-on:
+
+on: 
   workflow_dispatch:
     
+
 jobs:
-  changelog:
-    runs-on: ubuntu-20.04
+  build:
+    name: "✏️ Changelog generation"
+    runs-on: ubuntu-18.04
     steps:
-      - name: "✏️ Generate release changelog"
-        uses: heinrichreimer/github-changelog-generator-action@v2.3
+      - name: "📥 Check-out"
+        uses: actions/checkout@v2
+      - name: "✏️ Generate full changelog"
+        id: generate-full-changelog
+        uses: ./
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
-          
-      - run: cat CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          headerLabel: "# 📑 更新日志"
+          breakingLabel: '### 💥 破坏性变更'
+          enhancementLabel: '### 🚀 增强'
+          bugsLabel: '### 🐛 BUG修复'
+          deprecatedLabel: '### ⚠️ 弃用'
+          removedLabel: '### 🔥 移除'
+          securityLabel: '### 🛡️ 安全'
+          issuesLabel: '### 📁 Issues'
+          prLabel: '### 📁 Pull requests'
+          addSections: '{"documentation":{"prefix":"### 📖 文档","labels":["documentation"]},"tests":{"prefix":"### ✅ 测试","labels":["tests"]}}'
+          issues: true
+          issuesWoLabels: true
+          pullRequests: true
+          prWoLabels: true
+          author: true
+          unreleased: true
+          compareLink: true
+          stripGeneratorNotice: true
+          verbose: true
+      - name: "🖨️ Print changelog to console"
+        run: cat CHANGELOG.md
+      - name: "📤 Upload changelog"
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: "Changelog"
+          path: CHANGELOG.md
