@@ -17,11 +17,17 @@ var (
 )
 
 func fetchELangPath() string {
+	l := lookup("e")
+	if len(l) > 0 {
+		return l
+	}
+
 	key, err := registry.OpenKey(registry.CURRENT_USER, "Software\\FlySky\\E\\Install", registry.READ)
 	defer key.Close()
 	if err != nil {
-		return lookup("e")
+		return ""
 	}
+
 	path, _, _ := key.GetStringValue("Path")
 	if len(path) > 0 {
 		return path[:len(path)-4] + "e.exe"
