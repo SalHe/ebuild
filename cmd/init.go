@@ -40,6 +40,7 @@ const (
 *.recover.e
 ebuild.pwd.yaml
 **/*.ecode/log
+**/*.ecode/日志
 
 # 易语言产生的备份源码文件
 *.bak
