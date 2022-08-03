@@ -93,6 +93,8 @@ func (s *Source) OutputPath(outputDir string) string {
 	relDir, _ := filepath.Rel(s.projectDir, dir)
 	if s.Output != "" {
 		name = s.Output
+	} else {
+		name = name + s.targetType.Ext()
 	}
 	return filepath.Join(outputDir, relDir, name)
 }
