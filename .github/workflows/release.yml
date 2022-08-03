@@ -18,4 +18,4 @@ jobs:
         goarch: 386
         project_path: "."
         binary_name: "ebuild"
-        extra_files: LICENSE README.md ./docs/**
+        extra_files: LICENSE ./docs/**
