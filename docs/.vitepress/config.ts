@@ -68,6 +68,11 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/SalHe/ebuild' },
     ],
+    algolia: {
+      appId: 'I0YZBJE735',
+      apiKey: 'be48f498e8c14176450fe574c8347f12',
+      indexName: 'ebuild'
+    },
   },
   markdown: {
     config: (md) => {
