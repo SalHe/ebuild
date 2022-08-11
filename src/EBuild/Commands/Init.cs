@@ -1,5 +1,6 @@
 ﻿using EBuild.Config;
 using EBuild.Project;
+using EBuild.Toolchain;
 using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
@@ -14,7 +15,8 @@ public class Init : ProjectCommand
 
     private readonly ISerializer _serializer;
 
-    public Init(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
+    public Init(IDeserializer deserializer, ISerializer serializer, IEnumerable<IToolchain> toolchains) : base(
+        toolchains, deserializer)
     {
         _serializer = serializer;
     }

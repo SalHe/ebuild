@@ -1,4 +1,5 @@
-﻿using EBuild.Yaml.Converters;
+﻿using EBuild.Toolchain;
+using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
@@ -14,7 +15,7 @@ public class Info : ProjectCommand
     [Option("--password", Description = "显示源码的密码")]
     public bool ShowPassword { get; set; }
 
-    public Info(IDeserializer deserializer) : base(deserializer)
+    public Info(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(toolchains, deserializer)
     {
     }
 
