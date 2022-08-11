@@ -15,7 +15,7 @@ public class YamlConverterTests
     [Test]
     public void TestEnumConverter()
     {
-        string doc = @"
+        var doc = @"
 - BlackMoon
 - black-moon
 - 黑月编译
@@ -24,9 +24,6 @@ public class YamlConverterTests
             .WithTypeConverter(EnumConverter.Instance)
             .Build()
             .Deserialize<Compiler[]>(new Parser(new StringReader(doc)));
-        foreach (var compiler in compilers)
-        {
-            Assert.That(compiler, Is.EqualTo(Compiler.BlackMoon));
-        }
+        foreach (var compiler in compilers) Assert.That(compiler, Is.EqualTo(Compiler.BlackMoon));
     }
 }

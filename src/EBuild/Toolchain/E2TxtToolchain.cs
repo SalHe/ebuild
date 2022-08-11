@@ -22,8 +22,6 @@ public class E2TxtToolchain : GeneralToolchain
                 args.Add("-ns");
                 args.Add("2");
                 break;
-            default:
-                break;
         }
 
         if (e2txtConfig.GenerateE)

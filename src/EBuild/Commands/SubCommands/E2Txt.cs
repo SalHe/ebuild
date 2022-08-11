@@ -2,12 +2,6 @@
 using EBuild.Config.Resolved;
 using EBuild.Project;
 using EBuild.Toolchain;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
@@ -33,9 +27,8 @@ public class E2Txt : TargetCommand
                 return ":check_mark:将易语言代码转换为文本格式代码转换成功！";
             case WholeStatus.ErrorOccured:
                 return ":cross_mark:将易语言代码转换为文本格式代码过程中出现错误，请注意查看！";
-            default:
-                break;
         }
+
         return "";
     }
 
@@ -44,8 +37,10 @@ public class E2Txt : TargetCommand
         updateTargetStatus(TargetStatus.Doing, "开始转换");
 
         // TODO 实现转换
-        var args = E2TxtToolchain.E2TxtArgs(target.Target.Source, target.Target.GetECodeDir(), _resolvedConfig.RootConfig.E2Txt);
-        updateTargetStatus(TargetStatus.Doing, string.Format("[grey]{0}[/]", _e2txt.ExecutablePath + " " + string.Join(" ", args)));
+        var args = E2TxtToolchain.E2TxtArgs(target.Target.Source, target.Target.GetECodeDir(),
+            _resolvedConfig.RootConfig.E2Txt);
+        updateTargetStatus(TargetStatus.Doing,
+            string.Format("[grey]{0}[/]", _e2txt.ExecutablePath + " " + string.Join(" ", args)));
 
         return Task.FromResult(true);
     }

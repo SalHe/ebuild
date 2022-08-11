@@ -1,5 +1,4 @@
-﻿using EBuild.Config;
-using EBuild.Project;
+﻿using EBuild.Project;
 using EBuild.Sources;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
@@ -77,7 +76,7 @@ public class ResolvedConfig
 public enum TargetOrigin
 {
     Search,
-    Custom,
+    Custom
 }
 
 public record ResolvedTarget(

@@ -10,7 +10,7 @@ public enum Compiler
     [EnumAlias("黑月编译")] BlackMoon,
     [EnumAlias("黑月汇编")] BlackMoonAsm,
     [EnumAlias("黑月C++")] BlackMoonCpp,
-    [EnumAlias("黑月MFC")] BlackMoonMFC,
+    [EnumAlias("黑月MFC")] BlackMoonMFC
 }
 
 public class Build

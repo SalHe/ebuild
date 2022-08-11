@@ -1,4 +1,5 @@
-﻿using EBuild.Extensions;
+﻿using EBuild.Commands;
+using EBuild.Extensions;
 using EBuild.Global;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,4 +19,4 @@ return await new HostBuilder()
         services.AddImplementation<IToolchain, E2TxtToolchain>();
         services.AddImplementation<IToolchain, ELangToolchain>();
     })
-    .RunCommandLineApplicationAsync<EBuild.Commands.EBuildCli>(args);
+    .RunCommandLineApplicationAsync<EBuildCli>(args);

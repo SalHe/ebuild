@@ -6,7 +6,7 @@ public static class ProjectPath
     {
         return Path.GetFullPath("ebuild.yaml", projectRootDir);
     }
-    
+
     public static string GetSourcePasswordFilePath(string projectRootDir)
     {
         return Path.GetFullPath("ebuild.pwd.yaml", projectRootDir);

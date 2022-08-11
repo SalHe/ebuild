@@ -1,6 +1,4 @@
-﻿using YamlDotNet.Serialization;
-
-namespace EBuild.Hooks;
+﻿namespace EBuild.Hooks;
 
 public enum Hook
 {

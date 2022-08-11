@@ -7,7 +7,7 @@ namespace EBuild.Test;
 
 public class ConfigTests
 {
-    private static string _projectDir = Path.GetFullPath("./test-project", Directory.GetCurrentDirectory());
+    private static readonly string _projectDir = Path.GetFullPath("./test-project", Directory.GetCurrentDirectory());
     private static string _pwdFilePath = ProjectPath.GetSourcePasswordFilePath(_projectDir);
     private ResolvedConfig _resolvedConfig;
 

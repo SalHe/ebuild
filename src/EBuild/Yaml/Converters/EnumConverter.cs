@@ -25,17 +25,12 @@ public class EnumConverter : IYamlTypeConverter
         foreach (var value in Enum.GetValues(type))
         {
             var alias = type.GetField(Enum.GetName(type, value)!)!.GetCustomAttribute<EnumAliasAttribute>();
-            if (alias != null && possibleNames.Contains(alias.Name))
-            {
-                return value;
-            }
+            if (alias != null && possibleNames.Contains(alias.Name)) return value;
         }
 
         foreach (var possibleName in possibleNames)
-        {
-            if (Enum.TryParse(type, possibleName, out object? result))
+            if (Enum.TryParse(type, possibleName, out var result))
                 return result;
-        }
 
         return null;
     }

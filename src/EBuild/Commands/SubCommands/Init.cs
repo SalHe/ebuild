@@ -1,7 +1,6 @@
 ﻿using EBuild.Commands.Base;
 using EBuild.Config;
 using EBuild.Project;
-using EBuild.Toolchain;
 using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
@@ -12,9 +11,6 @@ namespace EBuild.Commands.SubCommands;
 [Command("init", Description = "初始化工程")]
 public class Init : ProjectCommand
 {
-    [Option("-d|--default", Description = "采用默认配置初始化工程。")]
-    public bool DefaultInit { get; set; }
-
     private readonly ISerializer _serializer;
 
     public Init(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
@@ -22,7 +18,13 @@ public class Init : ProjectCommand
         _serializer = serializer;
     }
 
-    protected override bool ShowLoadConfig() => false;
+    [Option("-d|--default", Description = "采用默认配置初始化工程。")]
+    public bool DefaultInit { get; set; }
+
+    protected override bool ShowLoadConfig()
+    {
+        return false;
+    }
 
     protected override int OnExecuteInternal(CommandLineApplication application)
     {
@@ -67,7 +69,7 @@ ebuild-out/");
     private RootConfig CreateRootConfig()
     {
         var defaultProjectName = Path.GetFileName(ProjectRoot);
-        var project = new EBuild.Config.Project()
+        var project = new Config.Project
         {
             Name = defaultProjectName,
             Version = "1.0",
@@ -76,34 +78,34 @@ ebuild-out/");
             Repository = $"https://github.com/{Environment.UserName}/{defaultProjectName}",
             Homepage = $"https://github.com/{Environment.UserName}"
         };
-        var rootConfig = new RootConfig()
+        var rootConfig = new RootConfig
         {
             Project = project,
-            Scripts = new Dictionary<string, string>()
+            Scripts = new Dictionary<string, string>
             {
                 {
                     "hello", "@echo off\necho Hello ebuild!"
                 }
             },
-            Includes = new List<string>()
+            Includes = new List<string>
             {
                 "**/*.e"
             },
-            Excludes = new List<string>()
+            Excludes = new List<string>
             {
                 "**/*.recover.e",
                 "**/*.ecode/**.e",
                 "**/*.代码/**.e"
             },
-            ExcludeBuilds = new List<string>()
+            ExcludeBuilds = new List<string>
             {
                 "./scripts/**/*.e"
             },
-            Build = new Build()
+            Build = new Build
             {
                 Compiler = Compiler.Static
             },
-            E2Txt = new Config.E2Txt()
+            E2Txt = new Config.E2Txt
             {
                 GenerateE = true,
                 NameStyle = Config.E2Txt.NameStyleEnum.Chinese
