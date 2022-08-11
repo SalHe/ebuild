@@ -5,7 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
-namespace EBuild.Commands;
+namespace EBuild.Commands.Base;
 
 public class ProjectCommand : CommandBase
 {

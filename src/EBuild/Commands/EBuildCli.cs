@@ -1,4 +1,6 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using EBuild.Commands.Base;
+using EBuild.Commands.SubCommands;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace EBuild.Commands;
 
@@ -6,7 +8,7 @@ namespace EBuild.Commands;
 [Subcommand(
     typeof(Init),
     typeof(Info),
-    typeof(Toolchain)
+    typeof(SubCommands.Toolchain)
 )]
 public class EBuildCli : CommandBase
 {

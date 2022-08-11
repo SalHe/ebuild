@@ -1,6 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 
-namespace EBuild.Commands;
+namespace EBuild.Commands.Base;
 
 [HelpOption]
 public class CommandBase

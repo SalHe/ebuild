@@ -1,9 +1,10 @@
-﻿using EBuild.Toolchain;
+﻿using EBuild.Commands.Base;
+using EBuild.Toolchain;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
-namespace EBuild.Commands;
+namespace EBuild.Commands.SubCommands;
 
 [Command("toolchain")]
 public class Toolchain : ProjectCommand

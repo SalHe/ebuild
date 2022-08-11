@@ -1,4 +1,5 @@
-﻿using EBuild.Config;
+﻿using EBuild.Commands.Base;
+using EBuild.Config;
 using EBuild.Project;
 using EBuild.Toolchain;
 using EBuild.Yaml.Converters;
@@ -6,7 +7,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
-namespace EBuild.Commands;
+namespace EBuild.Commands.SubCommands;
 
 public class Init : ProjectCommand
 {

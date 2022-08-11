@@ -1,10 +1,11 @@
-﻿using EBuild.Toolchain;
+﻿using EBuild.Commands.Base;
+using EBuild.Toolchain;
 using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
-namespace EBuild.Commands;
+namespace EBuild.Commands.SubCommands;
 
 [Command("info", Description = "查看当前工程信息。")]
 public class Info : ProjectCommand
