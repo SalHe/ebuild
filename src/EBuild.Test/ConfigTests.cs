@@ -1,4 +1,5 @@
 ﻿using EBuild.Global;
+using EBuild.Project;
 using EBuild.Sources;
 
 namespace EBuild.Test;
@@ -6,7 +7,7 @@ namespace EBuild.Test;
 public class ConfigTests
 {
     private static string _projectDir = Path.GetFullPath("./test-project", Directory.GetCurrentDirectory());
-    private static string _pwdFilePath = Path.GetFullPath("ebuild.pwd.yaml", _projectDir);
+    private static string _pwdFilePath = ProjectPath.GetSourcePasswordFilePath(_projectDir);
     private Commands.Config _resolvedConfig;
 
     [SetUp]

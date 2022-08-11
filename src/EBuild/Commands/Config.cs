@@ -1,4 +1,5 @@
 ﻿using EBuild.Config;
+using EBuild.Project;
 using EBuild.Sources;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
@@ -10,7 +11,7 @@ public class Config
 {
     public string ProjectRootDir { get; private init; }
     public string OutputDir { get; set; }
-    public string ConfigFile => Path.GetFullPath("ebuild.yaml", ProjectRootDir);
+    public string ConfigFile => ProjectPath.GetConfigFilePath(ProjectRootDir);
     public RootConfig RootConfig { get; private set; }
     public IReadOnlyList<ResolvedTarget> ResolveTargets { get; private set; }
 

@@ -1,4 +1,5 @@
-﻿using EBuild.Sources;
+﻿using EBuild.Project;
+using EBuild.Sources;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
@@ -8,7 +9,6 @@ namespace EBuild.Commands;
 public class ProjectCommand : CommandBase
 {
     [Option("-p|--project", Description = "工程根目录，默认为当前工作路径。")]
-    [DirectoryExists]
     public string ProjectRoot { get; set; } = Directory.GetCurrentDirectory();
 
     private readonly IDeserializer _deserializer;
@@ -20,14 +20,22 @@ public class ProjectCommand : CommandBase
         _deserializer = deserializer;
     }
 
+    protected virtual bool ShowLoadConfig()
+    {
+        return true;
+    }
+
     protected override int OnExecute(CommandLineApplication application)
     {
         try
         {
-            LoadProject();
-
-            AnsiConsole.MarkupLine("[green]已启用配置：{0}[/]", _resolvedConfig.ConfigFile);
-            AnsiConsole.WriteLine();
+            ResolveProjectRoot();
+            if (ShowLoadConfig())
+            {
+                LoadProject();
+                AnsiConsole.MarkupLine("[green]已启用配置：{0}[/]", _resolvedConfig.ConfigFile);
+                AnsiConsole.WriteLine();
+            }
         }
         catch (FileNotFoundException e)
         {
@@ -48,6 +56,11 @@ public class ProjectCommand : CommandBase
         return OnExecuteInternal(application);
     }
 
+    private void ResolveProjectRoot()
+    {
+        ProjectRoot = Path.GetFullPath(ProjectRoot);
+    }
+
     protected virtual int OnExecuteInternal(CommandLineApplication application)
     {
         return 0;
@@ -55,9 +68,8 @@ public class ProjectCommand : CommandBase
 
     private void LoadProject()
     {
-        ProjectRoot = Path.GetFullPath(ProjectRoot);
         var pwdResolver = PasswordFileResolver.FromProjectRootDir(ProjectRoot);
         _resolvedConfig = Config.Load(ProjectRoot, _deserializer, pwdResolver);
-        _resolvedConfig.OutputDir = Path.GetFullPath("ebuild-out", ProjectRoot);
+        _resolvedConfig.OutputDir = ProjectPath.GetDefaultOutputPath(ProjectRoot);
     }
 }
