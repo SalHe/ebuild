@@ -5,9 +5,9 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using YamlDotNet.Serialization;
 
-namespace EBuild.Commands;
+namespace EBuild.Config.Resolved;
 
-public class Config
+public class ResolvedConfig
 {
     public string ProjectRootDir { get; private init; }
     public string OutputDir { get; set; }
@@ -15,13 +15,13 @@ public class Config
     public RootConfig RootConfig { get; private set; }
     public IReadOnlyList<ResolvedTarget> ResolveTargets { get; private set; }
 
-    private Config()
+    private ResolvedConfig()
     {
     }
 
-    public static Config Load(string projectRoot, IDeserializer deserializer, PasswordFileResolver passwordFileResolver)
+    public static ResolvedConfig Load(string projectRoot, IDeserializer deserializer, PasswordFileResolver passwordFileResolver)
     {
-        var resolvedConfig = new Config
+        var resolvedConfig = new ResolvedConfig
         {
             ProjectRootDir = projectRoot
         };

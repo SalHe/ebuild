@@ -1,4 +1,5 @@
 ﻿using EBuild.Commands.Base;
+using EBuild.Config.Resolved;
 using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;

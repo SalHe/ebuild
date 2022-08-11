@@ -1,4 +1,5 @@
-﻿using EBuild.Project;
+﻿using EBuild.Config.Resolved;
+using EBuild.Project;
 using EBuild.Sources;
 using EBuild.Toolchain;
 using McMaster.Extensions.CommandLineUtils;
@@ -14,7 +15,7 @@ public class ProjectCommand : CommandBase
 
     private readonly IDeserializer _deserializer;
 
-    protected Config _resolvedConfig;
+    protected ResolvedConfig _resolvedConfig;
 
     public ProjectCommand(IDeserializer deserializer)
     {
@@ -70,7 +71,7 @@ public class ProjectCommand : CommandBase
     private void LoadProject()
     {
         var pwdResolver = PasswordFileResolver.FromProjectRootDir(ProjectRoot);
-        _resolvedConfig = Config.Load(ProjectRoot, _deserializer, pwdResolver);
+        _resolvedConfig = ResolvedConfig.Load(ProjectRoot, _deserializer, pwdResolver);
         _resolvedConfig.OutputDir = ProjectPath.GetDefaultOutputPath(ProjectRoot);
     }
 }

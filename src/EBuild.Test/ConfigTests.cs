@@ -1,4 +1,5 @@
-﻿using EBuild.Global;
+﻿using EBuild.Config.Resolved;
+using EBuild.Global;
 using EBuild.Project;
 using EBuild.Sources;
 
@@ -8,12 +9,12 @@ public class ConfigTests
 {
     private static string _projectDir = Path.GetFullPath("./test-project", Directory.GetCurrentDirectory());
     private static string _pwdFilePath = ProjectPath.GetSourcePasswordFilePath(_projectDir);
-    private Commands.Config _resolvedConfig;
+    private ResolvedConfig _resolvedConfig;
 
     [SetUp]
     public void ResolveConfig()
     {
-        _resolvedConfig = Commands.Config.Load(_projectDir, Defaults.Deserializer,
+        _resolvedConfig = ResolvedConfig.Load(_projectDir, Defaults.Deserializer,
             PasswordFileResolver.FromProjectRootDir(_projectDir));
     }
 
