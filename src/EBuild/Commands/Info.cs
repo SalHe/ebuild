@@ -1,8 +1,22 @@
-﻿namespace EBuild.Commands;
+﻿using McMaster.Extensions.CommandLineUtils;
+using YamlDotNet.Serialization;
 
-public static class Info
+namespace EBuild.Commands;
+
+[Command("info", Description = "查看当前工程信息。")]
+public class Info : ProjectCommand
 {
-    public static void ShowProjectInfo(Config resolvedConfig)
+    public Info(IDeserializer deserializer) : base(deserializer)
+    {
+    }
+
+    protected override int OnExecuteInternal(CommandLineApplication application)
+    {
+        ShowProjectInfo(_resolvedConfig);
+        return 0;
+    }
+
+    public void ShowProjectInfo(Config resolvedConfig)
     {
         Console.WriteLine("项目：{0}", resolvedConfig.RootConfig.Project.Name);
         Console.WriteLine("描述：{0}", resolvedConfig.RootConfig.Project.Description);
