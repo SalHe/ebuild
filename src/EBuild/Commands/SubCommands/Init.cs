@@ -103,10 +103,10 @@ ebuild-out/");
             {
                 Compiler = Compiler.Static
             },
-            E2Txt = new E2Txt()
+            E2Txt = new Config.E2Txt()
             {
                 GenerateE = true,
-                NameStyle = E2Txt.NameStyleEnum.Chinese
+                NameStyle = Config.E2Txt.NameStyleEnum.Chinese
             }
         };
         if (!DefaultInit)
@@ -120,10 +120,10 @@ ebuild-out/");
 
             rootConfig.E2Txt.GenerateE = AnsiConsole.Confirm(Markup.Escape("[e2txt]生成易代码"), rootConfig.E2Txt.GenerateE);
             rootConfig.E2Txt.NameStyle = AnsiConsole.Prompt(
-                new SelectionPrompt<E2Txt.NameStyleEnum>()
+                new SelectionPrompt<Config.E2Txt.NameStyleEnum>()
                     .Title(Markup.Escape("[e2txt]命名风格"))
                     .UseConverter(DisplaySelector)
-                    .AddChoices(Enum.GetValues<E2Txt.NameStyleEnum>())
+                    .AddChoices(Enum.GetValues<Config.E2Txt.NameStyleEnum>())
             );
             AnsiConsole.MarkupLine(Markup.Escape("[e2txt]") + "命名风格：{0}", DisplaySelector(rootConfig.E2Txt.NameStyle));
 

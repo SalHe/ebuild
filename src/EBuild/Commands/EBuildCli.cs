@@ -8,7 +8,8 @@ namespace EBuild.Commands;
 [Subcommand(
     typeof(Init),
     typeof(Info),
-    typeof(SubCommands.Toolchain)
+    typeof(SubCommands.Toolchain),
+    typeof(E2Txt)
 )]
 public class EBuildCli : CommandBase
 {

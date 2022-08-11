@@ -11,4 +11,6 @@ public class Target
     public bool Package { get; set; }
     public IDictionary<Hook, string> Hooks { get; set; }
     public Build? Build { get; set; }
+    public string DisplayName(string projectRootDir) => string.IsNullOrEmpty(Name)
+        ? Path.GetRelativePath(projectRootDir, Source) : Name;
 }

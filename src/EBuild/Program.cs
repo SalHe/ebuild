@@ -1,4 +1,5 @@
-﻿using EBuild.Global;
+﻿using EBuild.Extensions;
+using EBuild.Global;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,8 +14,8 @@ return await new HostBuilder()
         services.AddSingleton(_ => Defaults.Deserializer);
         services.AddSingleton(_ => Defaults.Serializer);
 
-        services.AddSingleton<IToolchain, EclToolchain>();
-        services.AddSingleton<IToolchain, E2TxtToolchain>();
-        services.AddSingleton<IToolchain, ELangToolchain>();
+        services.AddImplementation<IToolchain, EclToolchain>();
+        services.AddImplementation<IToolchain, E2TxtToolchain>();
+        services.AddImplementation<IToolchain, ELangToolchain>();
     })
     .RunCommandLineApplicationAsync<EBuild.Commands.EBuildCli>(args);

@@ -27,16 +27,19 @@ public class ProjectCommand : CommandBase
         return true;
     }
 
+    protected virtual IEnumerable<IToolchain> NeededToolchains { get; } = new IToolchain[0];
+
     protected sealed override int OnExecute(CommandLineApplication application)
     {
         try
         {
             ResolveProjectRoot();
+            if (!CheckToolchians())
+                return 1;
             if (ShowLoadConfig())
             {
                 LoadProject();
                 AnsiConsole.MarkupLine("[green]已启用配置：{0}[/]", _resolvedConfig.ConfigFile);
-                AnsiConsole.WriteLine();
             }
         }
         catch (FileNotFoundException e)
@@ -56,6 +59,20 @@ public class ProjectCommand : CommandBase
         }
 
         return OnExecuteInternal(application);
+    }
+
+    private bool CheckToolchians()
+    {
+        foreach (var toolchain in NeededToolchains)
+        {
+            toolchain.Search(ProjectRoot);
+            if (!toolchain.Exists())
+            {
+                AnsiConsole.MarkupLine("[red]找不到 {0}[/]",Markup.Escape(toolchain.Description));
+                return false;
+            }
+        }
+        return true;
     }
 
     private void ResolveProjectRoot()
