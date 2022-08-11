@@ -12,14 +12,12 @@ public class ProjectCommand : CommandBase
     [Option("-p|--project", Description = "工程根目录，默认为当前工作路径。")]
     public string ProjectRoot { get; set; } = Directory.GetCurrentDirectory();
 
-    protected readonly IEnumerable<IToolchain> _toolchains;
     private readonly IDeserializer _deserializer;
 
     protected Config _resolvedConfig;
 
-    public ProjectCommand(IEnumerable<IToolchain> toolchains, IDeserializer deserializer)
+    public ProjectCommand(IDeserializer deserializer)
     {
-        _toolchains = toolchains;
         _deserializer = deserializer;
     }
 
@@ -33,7 +31,6 @@ public class ProjectCommand : CommandBase
         try
         {
             ResolveProjectRoot();
-            SearchToolchain();
             if (ShowLoadConfig())
             {
                 LoadProject();
@@ -58,14 +55,6 @@ public class ProjectCommand : CommandBase
         }
 
         return OnExecuteInternal(application);
-    }
-
-    private void SearchToolchain()
-    {
-        foreach (var toolchain in _toolchains)
-        {
-            toolchain.Search(ProjectRoot);
-        }
     }
 
     private void ResolveProjectRoot()

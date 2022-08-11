@@ -17,8 +17,7 @@ public class Init : ProjectCommand
 
     private readonly ISerializer _serializer;
 
-    public Init(IDeserializer deserializer, ISerializer serializer, IEnumerable<IToolchain> toolchains) : base(
-        toolchains, deserializer)
+    public Init(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
     {
         _serializer = serializer;
     }

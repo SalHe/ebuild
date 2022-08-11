@@ -9,8 +9,11 @@ namespace EBuild.Commands.SubCommands;
 [Command("toolchain", Description = "检查工具链。 ")]
 public class Toolchain : ProjectCommand
 {
-    public Toolchain(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(toolchains, deserializer)
+    private readonly IEnumerable<IToolchain> _toolchains;
+
+    public Toolchain(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(deserializer)
     {
+        _toolchains = toolchains;
     }
 
     protected override bool ShowLoadConfig() => false;
