@@ -9,6 +9,7 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
+[Command("init", Description = "初始化工程")]
 public class Init : ProjectCommand
 {
     [Option("-d|--default", Description = "采用默认配置初始化工程。")]

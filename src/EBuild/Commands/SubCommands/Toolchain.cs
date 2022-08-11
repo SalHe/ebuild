@@ -6,7 +6,7 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("toolchain")]
+[Command("toolchain", Description = "检查工具链。 ")]
 public class Toolchain : ProjectCommand
 {
     public Toolchain(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(toolchains, deserializer)
