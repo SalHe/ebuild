@@ -10,5 +10,5 @@ public class Target
     public string Output { get; set; }
     public bool Package { get; set; }
     public IDictionary<Hook, string> Hooks { get; set; }
-    public Build Build { get; set; }
+    public Build? Build { get; set; }
 }

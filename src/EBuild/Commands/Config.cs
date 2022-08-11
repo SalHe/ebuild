@@ -1,4 +1,5 @@
 ﻿using EBuild.Config;
+using EBuild.Sources;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using YamlDotNet.Serialization;
@@ -8,6 +9,7 @@ namespace EBuild.Commands;
 public class Config
 {
     public string ProjectRootDir { get; private init; }
+    public string OutputDir { get; set; }
     public string ConfigFile => Path.GetFullPath("ebuild.yaml", ProjectRootDir);
     public RootConfig RootConfig { get; private set; }
     public IReadOnlyList<ResolvedTarget> ResolveTargets { get; private set; }
@@ -16,7 +18,7 @@ public class Config
     {
     }
 
-    public static Config Load(string projectRoot, IDeserializer deserializer)
+    public static Config Load(string projectRoot, IDeserializer deserializer, PasswordFileResolver passwordFileResolver)
     {
         var resolvedConfig = new Config
         {
@@ -30,8 +32,13 @@ public class Config
         var sourcesAdded = new HashSet<string>();
         foreach (var targetInConfig in resolvedConfig.RootConfig.Targets)
         {
-            sourcesAdded.Add(Path.GetFullPath(targetInConfig.Source, projectRoot));
-            resolvedTargets.Add(new ResolvedTarget(targetInConfig, TargetOrigin.Custom));
+            targetInConfig.Source = Path.GetFullPath(targetInConfig.Source, projectRoot);
+            if (targetInConfig.Build == null)
+                targetInConfig.Build = resolvedConfig.RootConfig.Build;
+
+            sourcesAdded.Add(targetInConfig.Source);
+            var pwd = passwordFileResolver.Resolve(targetInConfig.Source);
+            resolvedTargets.Add(new ResolvedTarget(targetInConfig, TargetOrigin.Custom, Password: pwd));
         }
 
         // 搜索的源码
@@ -46,6 +53,7 @@ public class Config
             var sourcePath = Path.Join(projectRoot, file.Path);
             if (sourcesAdded.Contains(sourcePath))
                 continue;
+            var pwd = passwordFileResolver.Resolve(sourcePath);
 
             var target = new Target()
             {
@@ -71,4 +79,8 @@ public enum TargetOrigin
     Custom,
 }
 
-public record ResolvedTarget(Target Target, TargetOrigin Origin = TargetOrigin.Search, bool ShouldBuild = true);
+public record ResolvedTarget(
+    Target Target,
+    TargetOrigin Origin = TargetOrigin.Search,
+    bool ShouldBuild = true,
+    string Password = "");

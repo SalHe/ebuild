@@ -10,9 +10,12 @@ public class RootConfig
     public IList<string> Includes { get; set; }
     public IList<string> ExcludeBuilds { get; set; }
 
-    [YamlMember(Alias = "e2txt")]
-    public E2Txt E2Txt { get; set; }
+    [YamlMember(Alias = "e2txt")] public E2Txt E2Txt { get; set; }
 
-    public Build Build { get; set; }
+    public Build Build { get; set; } = new Build()
+    {
+        Compiler = Compiler.Normal
+    };
+
     public IList<Target> Targets { get; set; }
 }

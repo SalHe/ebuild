@@ -1,5 +1,6 @@
-﻿using McMaster.Extensions.CommandLineUtils;
-using Microsoft.VisualBasic.CompilerServices;
+﻿using EBuild.Sources;
+using McMaster.Extensions.CommandLineUtils;
+using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands;
@@ -24,6 +25,9 @@ public class ProjectCommand : CommandBase
         try
         {
             LoadProject();
+
+            AnsiConsole.MarkupLine("[green]已启用配置：{0}[/]", _resolvedConfig.ConfigFile);
+            AnsiConsole.WriteLine();
         }
         catch (FileNotFoundException e)
         {
@@ -52,6 +56,8 @@ public class ProjectCommand : CommandBase
     private void LoadProject()
     {
         ProjectRoot = Path.GetFullPath(ProjectRoot);
-        _resolvedConfig = Config.Load(ProjectRoot, _deserializer);
+        var pwdResolver = PasswordFileResolver.FromProjectRootDir(ProjectRoot);
+        _resolvedConfig = Config.Load(ProjectRoot, _deserializer, pwdResolver);
+        _resolvedConfig.OutputDir = Path.GetFullPath("ebuild-out", ProjectRoot);
     }
 }
