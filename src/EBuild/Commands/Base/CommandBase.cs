@@ -7,9 +7,9 @@ namespace EBuild.Commands.Base;
 [VersionOptionFromMember(Description = "查看当前版本", MemberName = nameof(VersionText))]
 public class CommandBase
 {
-    protected virtual int OnExecute(CommandLineApplication application)
+    protected virtual Task<int> OnExecuteAsync(CommandLineApplication application, CancellationToken cancellationToken)
     {
-        return 0;
+        return Task.FromResult(0);
     }
 
     public static string VersionText() => Assembly.GetExecutingAssembly().GetName().Version.ToString();

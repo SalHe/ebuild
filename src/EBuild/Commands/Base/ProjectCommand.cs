@@ -29,7 +29,9 @@ public class ProjectCommand : CommandBase
 
     protected virtual IEnumerable<IToolchain> NeededToolchains { get; } = new IToolchain[0];
 
-    protected sealed override int OnExecute(CommandLineApplication application)
+    protected sealed override async Task<int> OnExecuteAsync(
+        CommandLineApplication application,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -58,7 +60,7 @@ public class ProjectCommand : CommandBase
             return 1;
         }
 
-        return OnExecuteInternal(application);
+        return await OnExecuteInternalAsync(application, cancellationToken);
     }
 
     private bool CheckToolchians()
@@ -68,16 +70,23 @@ public class ProjectCommand : CommandBase
             toolchain.Search(ProjectRoot);
             if (!toolchain.Exists())
             {
-                AnsiConsole.MarkupLine("[red]找不到 {0}[/]",Markup.Escape(toolchain.Description));
+                AnsiConsole.MarkupLine("[red]找不到 {0}[/]", Markup.Escape(toolchain.Description));
                 return false;
             }
         }
+
         return true;
     }
 
     private void ResolveProjectRoot()
     {
         ProjectRoot = Path.GetFullPath(ProjectRoot);
+    }
+
+    protected virtual Task<int> OnExecuteInternalAsync(CommandLineApplication application,
+        CancellationToken cancellationToken)
+    {
+        return Task.Run(() => OnExecuteInternal(application), cancellationToken);
     }
 
     protected virtual int OnExecuteInternal(CommandLineApplication application)

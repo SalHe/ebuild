@@ -38,7 +38,8 @@ public class E2Txt : TargetCommand
 
     private static readonly Regex _multispaces = new Regex(@"\s+");
 
-    protected override Task<bool> OnDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus)
+    protected override async Task<bool> OnDoTargetAsync(ResolvedTarget target, UpdateTargetStatus updateTargetStatus,
+        CancellationToken cancellationToken)
     {
         updateTargetStatus(TargetStatus.Doing, "开始转换");
 
@@ -100,7 +101,13 @@ public class E2Txt : TargetCommand
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        process.WaitForExit();
+        cancellationToken.Register(() =>
+        {
+            process.Kill();
+            process.CancelOutputRead();;
+            process.CancelErrorRead();;
+        });
+        await process.WaitForExitAsync(cancellationToken);
 
         if (!noError)
         {
@@ -111,7 +118,7 @@ public class E2Txt : TargetCommand
             );
         }
 
-        return Task.FromResult(convertOk);
+        return convertOk;
     }
 
     protected virtual IList<string> GetArgs(ResolvedTarget target)
@@ -120,7 +127,8 @@ public class E2Txt : TargetCommand
             _resolvedConfig.RootConfig.E2Txt);
     }
 
-    protected override Task<bool> OnPreDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus)
+    protected override Task<bool> OnPreDoTargetAsync(ResolvedTarget target, UpdateTargetStatus updateTargetStatus,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(target.Password))
         {

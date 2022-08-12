@@ -1,4 +1,5 @@
-﻿using EBuild.Config.Resolved;
+﻿using System.Reflection;
+using EBuild.Config.Resolved;
 using EBuild.Yaml.Converters;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
@@ -44,7 +45,8 @@ public abstract class TargetCommand : ProjectCommand
 
     protected abstract string GenerateHeading(WholeStatus status);
 
-    protected sealed override int OnExecuteInternal(CommandLineApplication application)
+    protected sealed override Task<int> OnExecuteInternalAsync(CommandLineApplication application,
+        CancellationToken cancellationToken)
     {
         var table = new Table();
         var activedTargets = _resolvedConfig.ResolveTargets
@@ -54,13 +56,15 @@ public abstract class TargetCommand : ProjectCommand
         if (activedTargets.Count <= 0)
         {
             AnsiConsole.MarkupLine("[bold]没有找到符合要求的目标哦。[/]");
-            return 0;
+            return Task.FromResult(0);
         }
 
-        return AnsiConsole.Live(table).Start(ctx => StartTargetTasks(activedTargets, ctx, table));
+        return Task.FromResult(AnsiConsole.Live(table)
+            .Start(ctx => StartTargetTasks(activedTargets, ctx, table, cancellationToken)));
     }
 
-    private int StartTargetTasks(IList<ResolvedTarget> activedTargets, LiveDisplayContext ctx, Table table)
+    private int StartTargetTasks(IList<ResolvedTarget> activedTargets, LiveDisplayContext ctx, Table table,
+        CancellationToken cancellationToken)
     {
         var semaphore = new Semaphore(ConcurrencyCount, ConcurrencyCount);
         var allOk = true;
@@ -86,18 +90,18 @@ public abstract class TargetCommand : ProjectCommand
                 });
                 updateTargetStatus(TargetStatus.Waiting, "正在等待...");
 
-                if (await OnPreDoTarget(activedTarget, updateTargetStatus))
+                if (await OnPreDoTargetAsync(activedTarget, updateTargetStatus, cancellationToken))
                 {
                     semaphore.WaitOne();
-                    if (!await OnDoTarget(activedTarget, updateTargetStatus))
+                    if (!await OnDoTargetAsync(activedTarget, updateTargetStatus, cancellationToken))
                         allOk = false;
                     semaphore.Release();
                 }
-            });
+            }, cancellationToken);
             tasks.Add(task);
         }
 
-        Task.WaitAll(tasks.ToArray());
+        Task.WaitAll(tasks.ToArray(), cancellationToken);
 
         if (allOk)
             table.Title(GenerateHeading(WholeStatus.Completed));
@@ -108,7 +112,9 @@ public abstract class TargetCommand : ProjectCommand
         return allOk ? 0 : 1;
     }
 
-    protected abstract Task<bool> OnPreDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus);
+    protected abstract Task<bool> OnPreDoTargetAsync(ResolvedTarget target, UpdateTargetStatus updateTargetStatus,
+        CancellationToken cancellationToken);
 
-    protected abstract Task<bool> OnDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus);
+    protected abstract Task<bool> OnDoTargetAsync(ResolvedTarget target, UpdateTargetStatus updateTargetStatus,
+        CancellationToken cancellationToken);
 }
