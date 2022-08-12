@@ -15,20 +15,27 @@ public abstract class TargetCommand : ProjectCommand
 {
     protected enum TargetStatus
     {
-        [EnumAlias("[green]等待中[/]")] Waiting,
-        [EnumAlias("[green]进行中[/]")] Doing,
-        [EnumAlias(":check_mark:")] Done,
-        [EnumAlias(":cross_mark:")] Error
+        [EnumAlias("等待中")] Waiting,
+
+        [EnumAlias("[yellow]:red_exclamation_mark:[/]")]
+        Skipped,
+        [EnumAlias("进行中")] Doing,
+        [EnumAlias("[green]:check_mark:[/]")] Done,
+        [EnumAlias("[red]:cross_mark:[/]")] Error
     }
 
     protected enum WholeStatus
     {
-        Doing, Completed, ErrorOccured
+        Doing,
+        Completed,
+        ErrorOccured
     }
 
     public string[] RemainingArguments { get; }
+
     [Option("-c|--concurrency", Description = "并行任务个数。")]
     public virtual int ConcurrencyCount { get; set; } = 1;
+
     protected delegate void UpdateTargetStatus(TargetStatus status, string log);
 
     public TargetCommand(IDeserializer deserializer) : base(deserializer)
@@ -41,8 +48,8 @@ public abstract class TargetCommand : ProjectCommand
     {
         var table = new Table();
         var activedTargets = _resolvedConfig.ResolveTargets
-                    .Where(x => RemainingArguments.Length <= 0 || RemainingArguments.Contains(x.Target.Name))
-                    .ToList();
+            .Where(x => RemainingArguments.Length <= 0 || RemainingArguments.Contains(x.Target.Name))
+            .ToList();
 
         if (activedTargets.Count <= 0)
         {
@@ -55,15 +62,15 @@ public abstract class TargetCommand : ProjectCommand
 
     private int StartTargetTasks(IList<ResolvedTarget> activedTargets, LiveDisplayContext ctx, Table table)
     {
-        var mutex = new Mutex();
         var semaphore = new Semaphore(ConcurrencyCount, ConcurrencyCount);
         var allOk = true;
 
         table.Title(GenerateHeading(WholeStatus.Doing));
-        table.AddColumns("状态", "任务", "日志");
-        table.HideHeaders();
+        table.AddColumns("状态", "目标", "日志");
 
         var tasks = new List<Task>();
+        foreach (var activedTarget in activedTargets)
+            table.AddRow("", Markup.Escape(activedTarget.Target.DisplayName(ProjectRoot)), "");
         for (int i = 0; i < activedTargets.Count(); i++)
         {
             var activedTarget = activedTargets[i];
@@ -71,14 +78,11 @@ public abstract class TargetCommand : ProjectCommand
             var capturedI = i;
             var task = Task.Run(async () =>
             {
-                table.AddRow("", activedTarget.Target.DisplayName(ProjectRoot), "");
                 var updateTargetStatus = (UpdateTargetStatus)((status, log) =>
                 {
-                    mutex.WaitOne();
                     table.UpdateCell(capturedI, 0, new Markup(EnumAliasAttribute.GetEnumAliasAttribute(status)!.Name));
                     table.UpdateCell(capturedI, 2, new Markup(log));
                     ctx.Refresh();
-                    mutex.ReleaseMutex();
                 });
                 updateTargetStatus(TargetStatus.Waiting, "正在等待...");
 
@@ -92,12 +96,14 @@ public abstract class TargetCommand : ProjectCommand
             });
             tasks.Add(task);
         }
+
         Task.WaitAll(tasks.ToArray());
 
         if (allOk)
             table.Title(GenerateHeading(WholeStatus.Completed));
         else
             table.Title(GenerateHeading(WholeStatus.ErrorOccured));
+        Console.Clear();
         ctx.Refresh();
         return allOk ? 0 : 1;
     }
@@ -105,5 +111,4 @@ public abstract class TargetCommand : ProjectCommand
     protected abstract Task<bool> OnPreDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus);
 
     protected abstract Task<bool> OnDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus);
-
 }

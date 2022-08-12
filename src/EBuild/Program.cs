@@ -1,10 +1,13 @@
-﻿using EBuild.Commands;
+﻿using System.Text;
+using EBuild.Commands;
 using EBuild.Extensions;
 using EBuild.Global;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 return await new HostBuilder()
     .ConfigureLogging((ctx, builder) => builder.AddConsole())

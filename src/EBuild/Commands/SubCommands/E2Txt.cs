@@ -1,7 +1,11 @@
-﻿using EBuild.Commands.Base;
+﻿using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
+using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Project;
 using EBuild.Toolchain;
+using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
@@ -22,32 +26,109 @@ public class E2Txt : TargetCommand
         switch (status)
         {
             case WholeStatus.Doing:
-                return "正在将易语言代码转换为文本格式代码...";
+                return "e2txt";
             case WholeStatus.Completed:
-                return ":check_mark:将易语言代码转换为文本格式代码转换成功！";
+                return "[green]:check_mark:e2txt[/]";
             case WholeStatus.ErrorOccured:
-                return ":cross_mark:将易语言代码转换为文本格式代码过程中出现错误，请注意查看！";
+                return "[red]:cross_mark:e2txt[/]";
         }
 
         return "";
     }
 
+    private static readonly Regex _multispaces = new Regex(@"\s+");
+
     protected override Task<bool> OnDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus)
     {
         updateTargetStatus(TargetStatus.Doing, "开始转换");
 
-        // TODO 实现转换
-        var args = E2TxtToolchain.E2TxtArgs(target.Target.Source, target.Target.GetECodeDir(),
-            _resolvedConfig.RootConfig.E2Txt);
-        updateTargetStatus(TargetStatus.Doing,
-            string.Format("[grey]{0}[/]", _e2txt.ExecutablePath + " " + string.Join(" ", args)));
+        var noError = true;
+        var convertOk = false;
 
-        return Task.FromResult(true);
+        var args = GetArgs(target);
+        updateTargetStatus(TargetStatus.Doing,
+            string.Format("[grey]{0}[/]", Markup.Escape(_e2txt.ExecutablePath + " " + string.Join(" ", args))));
+
+        var process = new Process();
+        foreach (var s in args) process.StartInfo.ArgumentList.Add(s);
+        process.StartInfo.FileName = _e2txt.ExecutablePath;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.StandardOutputEncoding = Encoding.GetEncoding("gbk");
+        process.StartInfo.StandardErrorEncoding = Encoding.GetEncoding("gbk");
+
+        var error = "";
+
+        var d = (DataReceivedEventHandler)((sender, eventArgs) =>
+        {
+            if (!string.IsNullOrEmpty(eventArgs.Data))
+            {
+                if (eventArgs.Data.StartsWith("SUCC:"))
+                {
+                    // 成功
+                    convertOk = true;
+                    var outputDir = eventArgs.Data.Substring(5);
+                    updateTargetStatus(TargetStatus.Done,
+                        string.Format("[green]转换成功：{0}[/]",
+                            Markup.Escape(outputDir)
+                        )
+                    );
+                }
+                else if (eventArgs.Data.StartsWith("ERROR:"))
+                {
+                    // 错误提示
+                    noError = false;
+                    error += eventArgs.Data.Substring(6) + "\n";
+                    updateTargetStatus(TargetStatus.Error,
+                        string.Format("[red]转换出错：{0}[/]",
+                            Markup.Escape(_multispaces.Replace(error, " "))
+                        )
+                    );
+                }
+                else
+                {
+                    // 日志
+                    if (!convertOk)
+                        updateTargetStatus(noError ? TargetStatus.Doing : TargetStatus.Error,
+                            Markup.Escape(_multispaces.Replace(eventArgs.Data, " ")));
+                }
+            }
+        });
+        process.OutputDataReceived += d;
+        process.ErrorDataReceived += d;
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        process.WaitForExit();
+
+        if (!noError)
+        {
+            updateTargetStatus(TargetStatus.Error,
+                string.Format("[red]转换过程中出现错误：\n{0}[/]",
+                    Markup.Escape(error)
+                )
+            );
+        }
+
+        return Task.FromResult(convertOk);
+    }
+
+    protected virtual IList<string> GetArgs(ResolvedTarget target)
+    {
+        return E2TxtToolchain.E2TxtArgs(target.Target.Source, target.Target.GetECodeDir(),
+            _resolvedConfig.RootConfig.E2Txt);
     }
 
     protected override Task<bool> OnPreDoTarget(ResolvedTarget target, UpdateTargetStatus updateTargetStatus)
     {
-        updateTargetStatus(TargetStatus.Waiting, "等待转换中...");
-        return Task.FromResult(true);
+        if (string.IsNullOrEmpty(target.Password))
+        {
+            updateTargetStatus(TargetStatus.Waiting, "等待转换中...");
+            return Task.FromResult(true);
+        }
+
+        updateTargetStatus(TargetStatus.Skipped, "[yellow]源文件存在密码，已跳过转换！[/]");
+        return Task.FromResult(false);
     }
 }

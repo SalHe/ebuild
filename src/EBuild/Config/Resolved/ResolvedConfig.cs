@@ -18,7 +18,8 @@ public class ResolvedConfig
     {
     }
 
-    public static ResolvedConfig Load(string projectRoot, IDeserializer deserializer, PasswordFileResolver passwordFileResolver)
+    public static ResolvedConfig Load(string projectRoot, IDeserializer deserializer,
+        PasswordFileResolver passwordFileResolver)
     {
         var resolvedConfig = new ResolvedConfig
         {
@@ -30,15 +31,18 @@ public class ResolvedConfig
 
         // 自定义的源码
         var sourcesAdded = new HashSet<string>();
-        foreach (var targetInConfig in resolvedConfig.RootConfig.Targets)
+        if (resolvedConfig.RootConfig.Targets != null)
         {
-            targetInConfig.Source = Path.GetFullPath(targetInConfig.Source, projectRoot);
-            if (targetInConfig.Build == null)
-                targetInConfig.Build = resolvedConfig.RootConfig.Build;
+            foreach (var targetInConfig in resolvedConfig.RootConfig.Targets)
+            {
+                targetInConfig.Source = Path.GetFullPath(targetInConfig.Source, projectRoot);
+                if (targetInConfig.Build == null)
+                    targetInConfig.Build = resolvedConfig.RootConfig.Build;
 
-            sourcesAdded.Add(targetInConfig.Source);
-            var pwd = passwordFileResolver.Resolve(targetInConfig.Source);
-            resolvedTargets.Add(new ResolvedTarget(targetInConfig, TargetOrigin.Custom, Password: pwd));
+                sourcesAdded.Add(targetInConfig.Source);
+                var pwd = passwordFileResolver.Resolve(targetInConfig.Source);
+                resolvedTargets.Add(new ResolvedTarget(targetInConfig, TargetOrigin.Custom, Password: pwd));
+            }
         }
 
         // 搜索的源码
@@ -57,7 +61,7 @@ public class ResolvedConfig
 
             var target = new Target()
             {
-                Name = Path.GetFileNameWithoutExtension(file.Path),
+                Name = string.Empty,
                 Source = sourcePath,
                 Output = Path.ChangeExtension(Path.GetRelativePath(projectRoot, sourcePath),
                     null), // TODO 获取源码类型自动调整输出后缀
@@ -65,8 +69,8 @@ public class ResolvedConfig
                 Build = resolvedConfig.RootConfig.Build
             };
 
-            resolvedTargets.Add(new ResolvedTarget(target,
-                ShouldBuild: !excludeBuildsMatcher.Match(file.Path).HasMatches));
+            resolvedTargets.Add(new ResolvedTarget(target, TargetOrigin.Search,
+                !excludeBuildsMatcher.Match(file.Path).HasMatches, pwd));
         }
 
         return resolvedConfig;

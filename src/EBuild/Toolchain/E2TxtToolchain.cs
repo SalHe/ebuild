@@ -44,11 +44,11 @@ public class E2TxtToolchain : GeneralToolchain
 
     public static IList<string> E2TxtArgs(string source, string ecodeDir, E2Txt e2txtCofig)
     {
-        return Args(source, ecodeDir, "e2txt", e2txtCofig);
+        return Args(source, ecodeDir, "e2t", e2txtCofig);
     }
 
     public static IList<string> Txt2EArgs(string ecodeDir, string source, E2Txt e2txtCofig)
     {
-        return Args(source, ecodeDir, "txt2e", e2txtCofig);
+        return Args(ecodeDir, source, "t2e", e2txtCofig);
     }
 }
