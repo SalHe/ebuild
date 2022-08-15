@@ -54,7 +54,7 @@ public class ResolvedConfig
         excludeBuildsMatcher.AddIncludePatterns(resolvedConfig.RootConfig.ExcludeBuilds);
         foreach (var file in result.Files)
         {
-            var sourcePath = Path.Join(projectRoot, file.Path);
+            var sourcePath = Path.GetFullPath(file.Path, projectRoot);
             if (sourcesAdded.Contains(sourcePath))
                 continue;
             var pwd = passwordFileResolver.Resolve(sourcePath);
