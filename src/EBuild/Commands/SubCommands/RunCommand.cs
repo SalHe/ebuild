@@ -100,9 +100,9 @@ public class RunCommand : ProjectCommand
 
         var tasks = new List<Task>()
         {
-            ReadStream(process.StandardOutput, Console.Out),
-            ReadStream(process.StandardError, Console.Error),
-            ReadStream(new StreamReader(Console.OpenStandardInput()), process.StandardInput)
+            ReadStreamBuffered(process.StandardOutput, Console.Out),
+            ReadStreamBuffered(process.StandardError, Console.Error),
+            ReadStreamBuffered(new StreamReader(Console.OpenStandardInput()), process.StandardInput)
         };
         await process.WaitForExitAsync(cancellationToken);
 
@@ -111,10 +111,24 @@ public class RunCommand : ProjectCommand
             var buffer = new char[1024];
             while (!process.HasExited)
             {
+                var s = await tr.ReadToEndAsync();
+                if (!string.IsNullOrEmpty(s))
+                    await tw.WriteAsync(s);
+            }
+        }
+
+        async Task ReadStreamBuffered(TextReader tr, TextWriter tw)
+        {
+            var buffer = new char[1024];
+            while (!process.HasExited)
+            {
                 var len = await tr.ReadAsync(buffer, cancellationToken);
                 if (len > 0) await tw.WriteAsync(buffer, 0, len);
             }
         }
+
+        await Console.Out.WriteAsync(await process.StandardOutput.ReadToEndAsync());
+        await Console.Error.WriteAsync(await process.StandardError.ReadToEndAsync());
 
         File.Delete(exeOrBatPath);
         return process.ExitCode;
