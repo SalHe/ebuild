@@ -77,7 +77,8 @@ public class ResolvedConfig
 
         foreach (var target in resolvedConfig.ResolveTargets)
         {
-            if (!Path.HasExtension(target.Target.Output) && target.SourceMeta != null)
+            if (string.IsNullOrEmpty(target.Password) && !Path.HasExtension(target.Target.Output) &&
+                target.SourceMeta != null)
             {
                 if (target.Origin == TargetOrigin.Custom)
                 {
