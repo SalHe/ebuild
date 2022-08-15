@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using EBuild.Config;
 using EBuild.Config.Resolved;
+using EBuild.Sources;
 using EBuild.Yaml.Converters;
 
 namespace EBuild.Toolchain;
@@ -44,8 +45,10 @@ public class EclToolchain : GeneralToolchain
         if (target.Target.Package) args.Add("-p");
         else
         {
-            args.AddRange(CompilerArgs(target.Target.Build?.Compiler, target.Target.CompileConfig,
-                target.Target.CompileDescription)); // TODO 编译模块不用选择编译器
+            if (target.SourceMeta?.TargetType != TargetType.LinuxECom &&
+                target.SourceMeta?.TargetType != TargetType.WinECom) // 编译模块不用选择编译器
+                args.AddRange(CompilerArgs(target.Target.Build?.Compiler, target.Target.CompileConfig,
+                    target.Target.CompileDescription));
             if (!string.IsNullOrEmpty(target.Password))
                 args.AddRange(new[] { "-pwd", hideSecret ? "******" : target.Password });
         }

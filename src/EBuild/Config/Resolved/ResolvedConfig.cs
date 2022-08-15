@@ -1,7 +1,9 @@
-﻿using EBuild.Project;
+﻿using EBuild.Extensions;
+using EBuild.Project;
 using EBuild.Sources;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Config.Resolved;
@@ -64,13 +66,35 @@ public class ResolvedConfig
                 Name = string.Empty,
                 Source = sourcePath,
                 Output = Path.ChangeExtension(Path.GetRelativePath(projectRoot, sourcePath),
-                    null), // TODO 获取源码类型自动调整输出后缀
+                    null),
                 Package = false,
                 Build = resolvedConfig.RootConfig.Build
             };
 
             resolvedTargets.Add(new ResolvedTarget(target, TargetOrigin.Search,
                 !excludeBuildsMatcher.Match(file.Path).HasMatches, pwd));
+        }
+
+        foreach (var target in resolvedConfig.ResolveTargets)
+        {
+            if (!Path.HasExtension(target.Target.Output) && target.SourceMeta != null)
+            {
+                if (target.Origin == TargetOrigin.Custom)
+                {
+                    AnsiConsole.MarkupLine(
+                        $"[yellow]您可能未给{Markup.Escape("[")}{{0}}{Markup.Escape("]")}指定输出后缀，易语言会自动加上后缀，请注意。[/]",
+                        Markup.Escape(target.Target.Name));
+                }
+                else
+                {
+                    Attributes.GetEnumValueAttribute(target.SourceMeta.TargetType,
+                        out ESourceTargetTypeAttribute? attribute);
+                    target.Target.Output = Path.ChangeExtension(target.Target.Output, attribute!.Extension);
+                }
+            }
+
+            if (target.SourceMeta == null)
+                AnsiConsole.MarkupLine("[yellow]{0} 可能不是一个合法的源文件。[/]", Markup.Escape(target.Target.Source));
         }
 
         return resolvedConfig;
@@ -83,8 +107,23 @@ public enum TargetOrigin
     Custom
 }
 
-public record ResolvedTarget(
-    Target Target,
-    TargetOrigin Origin = TargetOrigin.Search,
-    bool ShouldBuild = true,
-    string Password = "");
+public class ResolvedTarget
+{
+    public ResolvedTarget(Target Target,
+        TargetOrigin Origin = TargetOrigin.Search,
+        bool ShouldBuild = true,
+        string Password = "")
+    {
+        this.Target = Target;
+        this.Origin = Origin;
+        this.ShouldBuild = ShouldBuild;
+        this.Password = Password;
+        this.SourceMeta = ESourceMeta.FromSource(Target.Source);
+    }
+
+    public Target Target { get; init; }
+    public TargetOrigin Origin { get; init; }
+    public bool ShouldBuild { get; init; }
+    public string Password { get; init; }
+    public ESourceMeta? SourceMeta { get; }
+}
