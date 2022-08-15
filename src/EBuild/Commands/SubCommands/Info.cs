@@ -72,9 +72,9 @@ public class Info : ProjectCommand
         foreach (var target in _resolvedConfig.ResolveTargets)
         {
             var cols = new List<string>();
-            cols.Add(AbsolutePath
+            cols.Add(Markup.Escape(AbsolutePath
                 ? target.Target.Source
-                : Path.GetRelativePath(ProjectRoot, target.Target.Source));
+                : Path.GetRelativePath(ProjectRoot, target.Target.Source)));
             switch (target.Origin)
             {
                 case TargetOrigin.Custom:
@@ -86,12 +86,12 @@ public class Info : ProjectCommand
             }
 
             if (ShowPassword)
-                cols.Add(target.Password);
+                cols.Add(Markup.Escape(target.Password));
 
             cols.Add(target.ShouldBuild ? "[green]:check_mark:[/]" : "[red]:cross_mark:[/]");
-            cols.Add(EnumAliasAttribute.GetEnumAliasAttribute(target.Target.Build.Compiler)?.Name ??
-                     target.Target.Build.Compiler.ToString());
-            cols.Add(target.Target.Output);
+            cols.Add(Markup.Escape(EnumAliasAttribute.GetEnumAliasAttribute(target.Target.Build.Compiler)?.Name ??
+                                   target.Target.Build.Compiler.ToString()));
+            cols.Add(Markup.Escape(target.Target.Output));
 
             table.AddRow(cols.ToArray());
         }
