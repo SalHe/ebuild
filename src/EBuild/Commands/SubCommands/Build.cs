@@ -107,6 +107,8 @@ public class BuildCommand : TargetCommand
         updateTargetStatus(TargetStatus.Doing, "开始编译");
 
         var compileOk = true;
+        var handler = GetEclLogHandler(Update, () => compileOk = false);
+        
         var process = new Process();
         foreach (var arg in GetBuildArgs(target)) process.StartInfo.ArgumentList.Add(arg);
         process.StartInfo.FileName = _eclToolchain.ExecutablePath;
@@ -114,8 +116,8 @@ public class BuildCommand : TargetCommand
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.StandardOutputEncoding =
             process.StartInfo.StandardErrorEncoding = Encoding.GetEncoding("gbk");
-        process.OutputDataReceived += Handler;
-        process.ErrorDataReceived += Handler;
+        process.OutputDataReceived += handler;
+        process.ErrorDataReceived += handler;
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
@@ -130,7 +132,14 @@ public class BuildCommand : TargetCommand
             }
         }
 
-        void Handler(object sender, DataReceivedEventArgs e)
+        if (compileOk)
+            Update(TargetStatus.Done, $"编译成功，保存到：{target.Target.OutputPath(_resolvedConfig.OutputDir)}");
+        return compileOk;
+    }
+
+    public static DataReceivedEventHandler GetEclLogHandler(Action<TargetStatus, string> update, Action compileFailed)
+    {
+        return (sender, e) =>
         {
             if (string.IsNullOrEmpty(e.Data))
             {
@@ -139,19 +148,15 @@ public class BuildCommand : TargetCommand
 
             if (!EclToolchain.TryMatchError(e.Data, out bool isOk, out int errorCode, out string tip))
             {
-                Update(TargetStatus.Doing, e.Data);
+                update(TargetStatus.Doing, e.Data);
                 return;
             }
 
             if (!isOk)
             {
-                Update(TargetStatus.Error, $"编译目标出错，错误代码：{errorCode}，错误提示：{tip}");
-                compileOk = false;
+                update(TargetStatus.Error, $"编译目标出错，错误代码：{errorCode}，错误提示：{tip}");
+                compileFailed();
             }
-        }
-
-        if (compileOk)
-            Update(TargetStatus.Done, $"编译成功，保存到：{target.Target.OutputPath(_resolvedConfig.OutputDir)}");
-        return compileOk;
+        };
     }
 }

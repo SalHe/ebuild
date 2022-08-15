@@ -5,7 +5,7 @@ namespace EBuild.Config;
 public class RootConfig
 {
     public Project Project { get; set; }
-    public IDictionary<string, string> Scripts { get; set; }
+    public IDictionary<string, string>? Scripts { get; set; }
     public IList<string> Excludes { get; set; } = new List<string>();
     public IList<string> Includes { get; set; } = new List<string>();
     public IList<string> ExcludeBuilds { get; set; } = new List<string>();

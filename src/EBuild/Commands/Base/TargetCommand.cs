@@ -9,7 +9,7 @@ namespace EBuild.Commands.Base;
 
 public abstract class TargetCommand : ProjectCommand
 {
-    protected enum TargetStatus
+    public enum TargetStatus
     {
         [EnumAlias("等待中")] Waiting,
 

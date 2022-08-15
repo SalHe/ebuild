@@ -41,16 +41,33 @@ public class EclToolchain : GeneralToolchain
 
     public static IList<string> Args(ResolvedTarget target, string outputDir, bool hideSecret = false)
     {
-        var args = new List<string>() { "make", target.Target.Source, target.Target.OutputPath(outputDir) };
-        if (target.Target.Package) args.Add("-p");
+        return Args(
+            target.Target.Source,
+            target.Target.OutputPath(outputDir),
+            target.SourceMeta,
+            target.Target.Build?.Compiler,
+            target.Target.CompileConfig,
+            target.Target.CompileDescription,
+            target.Password,
+            target.Target.Package,
+            hideSecret
+        );
+    }
+
+    public static IList<string> Args(string source, string outputPath, ESourceMeta? sourceMeta, Compiler? compiler,
+        string compileConfig, string compileDescription, string password, bool isPackage,
+        bool hideSecret = false)
+    {
+        var args = new List<string>() { "make", source, outputPath };
+        if (isPackage) args.Add("-p");
         else
         {
-            if (target.SourceMeta?.TargetType != TargetType.LinuxECom &&
-                target.SourceMeta?.TargetType != TargetType.WinECom) // 编译模块不用选择编译器
-                args.AddRange(CompilerArgs(target.Target.Build?.Compiler, target.Target.CompileConfig,
-                    target.Target.CompileDescription));
-            if (!string.IsNullOrEmpty(target.Password))
-                args.AddRange(new[] { "-pwd", hideSecret ? "******" : target.Password });
+            if (sourceMeta?.TargetType != TargetType.LinuxECom &&
+                sourceMeta?.TargetType != TargetType.WinECom) // 编译模块不用选择编译器
+                args.AddRange(CompilerArgs(compiler, compileConfig,
+                    compileDescription));
+            if (!string.IsNullOrEmpty(password))
+                args.AddRange(new[] { "-pwd", hideSecret ? "******" : password });
         }
 
         return args;

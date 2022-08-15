@@ -34,6 +34,6 @@ try
 }
 catch (OperationCanceledException e)
 {
-    AnsiConsole.Markup("[red]操作已取消[/]");
+    AnsiConsole.MarkupLine("\n[red]操作已取消[/]");
     return 1;
 }
