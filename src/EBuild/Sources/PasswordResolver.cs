@@ -23,9 +23,16 @@ public class PasswordFileResolver : IPasswordResolver
     {
         if (_pwdDict == null)
         {
-            var original = new Deserializer().Deserialize<Dictionary<string, string>>(File.OpenText(_pwdFilePath));
             _pwdDict = new Dictionary<string, string>();
-            foreach (var (file, pwd) in original) _pwdDict[Path.GetFullPath(file, _projectRoot)] = pwd;
+            try
+            {
+                var original = new Deserializer().Deserialize<Dictionary<string, string>>(File.OpenText(_pwdFilePath));
+                foreach (var (file, pwd) in original) _pwdDict[Path.GetFullPath(file, _projectRoot)] = pwd;
+            }
+            catch (Exception e)
+            {
+                // ignored
+            }
         }
 
         if (_pwdDict.ContainsKey(source))
