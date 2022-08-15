@@ -23,7 +23,7 @@ public class GeneralToolchain : IToolchain
         {
             GetExecutablePath(projectRootDir, _executableName),
             GetExecutablePath(Directory.GetCurrentDirectory(), _executableName),
-            GetExecutablePath(Assembly.GetExecutingAssembly().Location, _executableName)
+            GetExecutablePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _executableName)
         };
         foreach (var path in possible)
             if (File.Exists(path))
