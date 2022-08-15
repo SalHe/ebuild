@@ -52,6 +52,20 @@ ebuild.pwd.yaml
 # 编译输出
 ebuild-out/");
             File.WriteAllText(ProjectPath.GetSourcePasswordFilePath(ProjectRoot), "./带密码的源码.e: 123456");
+            File.WriteAllText(Path.GetFullPath("README.md", ProjectRoot), @$"# {rootConfig.Project.Name}
+
+## 编译
+
+```shell
+ebuild build
+```
+
+## e2txt
+
+```shell
+ebuild e2txt
+```
+");
         }
         catch (Exception e)
         {
