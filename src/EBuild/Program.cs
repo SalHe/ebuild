@@ -1,7 +1,10 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using EBuild.Commands;
+using EBuild.Commands.SubCommands;
 using EBuild.Extensions;
 using EBuild.Global;
+using EBuild.Project;
 using EBuild.Project.Cleaners;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +24,12 @@ try
 
             services.AddSingleton(_ => Defaults.Deserializer);
             services.AddSingleton(_ => Defaults.Serializer);
+
+            services.AddSingleton(
+                x => new EnvironmentVariables(x.GetService<IEnumerable<IToolchain>>()!)
+                {
+                    new("EBUILD_EXECUTABLE_PATH", "ebuild可执行文件路径", () => Assembly.GetExecutingAssembly().Location ?? "")
+                });
 
             services.AddImplementation<IToolchain, EclToolchain>();
             services.AddImplementation<IToolchain, E2TxtToolchain>();

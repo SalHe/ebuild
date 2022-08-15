@@ -4,6 +4,11 @@ namespace EBuild.Toolchain;
 
 public class E2TxtToolchain : GeneralToolchain
 {
+    public override IList<EnvironmentVariable> EnvironmentVariables => new List<EnvironmentVariable>()
+    {
+        new("E2TXT_DIR", "e2txt安装路径", () => Path.GetDirectoryName(ExecutablePath) ?? ""),
+    };
+
     public E2TxtToolchain() : base("e2txt", "http://e2ee.jimstone.com.cn/downloads/", "e2txt")
     {
     }

@@ -34,6 +34,11 @@ public class EclToolchain : GeneralToolchain
         [EnumAlias("不支持易包编译")] NotSupportEPkg = -19,
     }
 
+    public override IList<EnvironmentVariable> EnvironmentVariables => new List<EnvironmentVariable>()
+    {
+        new("ECL_DIR", "ecl安装路径", () => Path.GetDirectoryName(ExecutablePath) ?? ""),
+    };
+
     public EclToolchain() : base("易语言命令行编译工具", "https://bbs.125.la/forum.php?mod=viewthread&tid=14553929&highlight=ecl",
         "ecl")
     {

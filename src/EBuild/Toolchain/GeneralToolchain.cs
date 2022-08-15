@@ -2,7 +2,7 @@
 
 namespace EBuild.Toolchain;
 
-public class GeneralToolchain : IToolchain
+public abstract class GeneralToolchain : IToolchain
 {
     private readonly string _executableName;
 
@@ -16,6 +16,7 @@ public class GeneralToolchain : IToolchain
     public string Description { get; }
     public string Link { get; }
     public string ExecutablePath { get; protected set; } = string.Empty;
+    public abstract IList<EnvironmentVariable> EnvironmentVariables { get; }
 
     public virtual void Search(string projectRootDir)
     {

@@ -4,6 +4,11 @@ namespace EBuild.Toolchain;
 
 public class ELangToolchain : GeneralToolchain
 {
+    public override IList<EnvironmentVariable> EnvironmentVariables => new List<EnvironmentVariable>()
+    {
+        new("ELANG_DIR", "易语言安装路径", () => Path.GetDirectoryName(ExecutablePath) ?? ""),
+    };
+
     public ELangToolchain() : base("易语言", "http://www.eyuyan.com/pdown.htm", "e")
     {
     }
