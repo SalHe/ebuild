@@ -6,7 +6,11 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("txt2e", Description = "将文本格式的代码转换为易语言源文件。")]
+[Command(
+    "txt2e",
+    Description = "将文本格式的代码转换为易语言源文件。",
+    UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue
+)]
 public class Txt2E : E2Txt
 {
     public Txt2E(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer, e2txt)

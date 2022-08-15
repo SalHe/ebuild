@@ -7,11 +7,6 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.Base;
 
-[Command(
-    "e2txt",
-    Description = "将易语言代码转换到txt。",
-    UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect
-)]
 public abstract class TargetCommand : ProjectCommand
 {
     protected enum TargetStatus
@@ -57,8 +52,11 @@ public abstract class TargetCommand : ProjectCommand
     protected sealed override async Task<int> OnExecuteInternalAsync(CommandLineApplication application,
         CancellationToken cancellationToken)
     {
+        var possibleFile = RemainingArguments.Select(x => Path.GetFullPath(x, ProjectRoot));
+
         var activatedTargets = _resolvedConfig.ResolveTargets
-            .Where(x => RemainingArguments.Length <= 0 || RemainingArguments.Contains(x.Target.Name))
+            .Where(x => RemainingArguments.Length <= 0 || RemainingArguments.Contains(x.Target.Name) ||
+                        possibleFile.Contains(x.Target.Source))
             .ToList();
 
         if (activatedTargets.Count <= 0)

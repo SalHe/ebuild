@@ -5,11 +5,16 @@ using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Project;
 using EBuild.Toolchain;
+using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
+[Command(
+    "e2txt",
+    Description = "将易语言代码转换到txt。"
+)]
 public class E2Txt : TargetCommand
 {
     private readonly E2TxtToolchain _e2txt;
