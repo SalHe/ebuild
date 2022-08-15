@@ -12,7 +12,11 @@ namespace EBuild.Commands.SubCommands;
 
 [Command(
     "build",
-    Description = "构建目标。可指定需要构建的目标。如`ebuild build 程序1 程序2`。",
+    Description = "构建目标。",
+    ExtendedHelpText = @"
+本命令帮助您编译您配置文件的中的构建目标以及被搜索到的源文件。
+您也可以手动指定要编译的目标或者源文件，如`ebuild build 程序1 程序2`。
+当您不指定编译目标的时候，ebuild默认编译所有目标。",
     UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue
 )]
 public class BuildCommand : TargetCommand

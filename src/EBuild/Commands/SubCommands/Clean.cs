@@ -6,7 +6,8 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("clean", Description = @"清理恢复的源码等工程中间文件。包括：
+[Command("clean", Description = "清理恢复的源码等工程中间文件。", ExtendedHelpText = @"
+该命令可以清理恢复的源码等工程中间文件。包括：
 
 1. txt2e 中从文本格式代码恢复出来的易语言源文件(*.recover.e，只清理包含在工程源文件和目标中的恢复代码)；
 2. e2txt 中从易语言源文件转换成的文本格式代码的文件夹(*.ecode，只清理包含在工程源文件和目标中的恢复代码)。（可选，默认不清理）
