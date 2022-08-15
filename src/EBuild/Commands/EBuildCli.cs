@@ -11,7 +11,8 @@ namespace EBuild.Commands;
     typeof(SubCommands.Toolchain),
     typeof(E2Txt),
     typeof(Txt2E),
-    typeof(BuildCommand)
+    typeof(BuildCommand),
+    typeof(CleanCommand)
 )]
 public class EBuildCli : CommandBase
 {

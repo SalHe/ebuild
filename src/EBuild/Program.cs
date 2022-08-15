@@ -2,6 +2,7 @@
 using EBuild.Commands;
 using EBuild.Extensions;
 using EBuild.Global;
+using EBuild.Project.Cleaners;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +25,10 @@ try
             services.AddImplementation<IToolchain, EclToolchain>();
             services.AddImplementation<IToolchain, E2TxtToolchain>();
             services.AddImplementation<IToolchain, ELangToolchain>();
+
+            services.AddImplementation<ProjectCleaner, ProjectRecoverECleaner>();
+            services.AddImplementation<ProjectCleaner, ProjectECodeCleaner>();
+            services.AddImplementation<ProjectCleaner, ProjectOutputCleaner>();
         })
         .RunCommandLineApplicationAsync<EBuildCli>(args);
 }
