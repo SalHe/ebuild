@@ -1,4 +1,6 @@
-﻿using EBuild.Commands.Base;
+﻿using System.Diagnostics;
+using System.Text;
+using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Consoles;
 using EBuild.Toolchain;
@@ -8,7 +10,11 @@ using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("build", Description = "构建目标。可指定需要构建的目标。如`ebuild build 程序1 程序2`。")]
+[Command(
+    "build",
+    Description = "构建目标。可指定需要构建的目标。如`ebuild build 程序1 程序2`。",
+    UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue
+)]
 public class BuildCommand : TargetCommand
 {
     private readonly EclToolchain _eclToolchain;
@@ -69,11 +75,25 @@ public class BuildCommand : TargetCommand
         Action<TargetStatus, string> updateTargetStatus,
         CancellationToken cancellationToken)
     {
-        var args = EclToolchain.Args(target, _resolvedConfig.OutputDir);
-        updateTargetStatus(TargetStatus.Waiting,
-            $"准备编译中... {Markup.Escape(_eclToolchain.ExecutablePath)} {Markup.Escape(string.Join(" ", args))}");
+        if (target.ShouldBuild)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(target.Target.OutputPath(_resolvedConfig.OutputDir))!);
 
-        return Task.FromResult(true);
+            var args = GetBuildArgs(target, true);
+            updateTargetStatus(TargetStatus.Waiting,
+                $"准备编译中... {Markup.Escape(_eclToolchain.ExecutablePath)} {Markup.Escape(string.Join(" ", args))}");
+        }
+        else
+        {
+            updateTargetStatus(TargetStatus.Skipped, "本目标已被排除编译，将被跳过");
+        }
+
+        return Task.FromResult(target.ShouldBuild);
+    }
+
+    private IList<string> GetBuildArgs(ResolvedTarget target, bool hideSecret = false)
+    {
+        return EclToolchain.Args(target, _resolvedConfig.OutputDir, hideSecret);
     }
 
     protected override async Task<bool> OnDoTargetAsync(ResolvedTarget target,
@@ -81,8 +101,53 @@ public class BuildCommand : TargetCommand
         CancellationToken cancellationToken)
     {
         updateTargetStatus(TargetStatus.Doing, "开始编译");
-        await Task.Delay(500, cancellationToken); // TODO 实现ecl编译
-        updateTargetStatus(TargetStatus.Done, "完成编译");
-        return true;
+
+        var compileOk = true;
+        var process = new Process();
+        foreach (var arg in GetBuildArgs(target)) process.StartInfo.ArgumentList.Add(arg);
+        process.StartInfo.FileName = _eclToolchain.ExecutablePath;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.StandardOutputEncoding =
+            process.StartInfo.StandardErrorEncoding = Encoding.GetEncoding("gbk");
+        process.OutputDataReceived += Handler;
+        process.ErrorDataReceived += Handler;
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        cancellationToken.Register(() => process.Kill());
+        await process.WaitForExitAsync(cancellationToken);
+
+        void Update(TargetStatus status, string log)
+        {
+            if (!string.IsNullOrEmpty(log))
+            {
+                updateTargetStatus(status, Markup.Escape(log));
+            }
+        }
+
+        void Handler(object sender, DataReceivedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(e.Data))
+            {
+                return;
+            }
+
+            if (!EclToolchain.TryMatchError(e.Data, out bool isOk, out int errorCode, out string tip))
+            {
+                Update(TargetStatus.Doing, e.Data);
+                return;
+            }
+
+            if (!isOk)
+            {
+                Update(TargetStatus.Error, $"编译目标出错，错误代码：{errorCode}，错误提示：{tip}");
+                compileOk = false;
+            }
+        }
+
+        if (compileOk)
+            Update(TargetStatus.Done, $"编译成功，保存到：{target.Target.OutputPath(_resolvedConfig.OutputDir)}");
+        return compileOk;
     }
 }
