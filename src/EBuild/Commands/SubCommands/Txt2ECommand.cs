@@ -7,9 +7,9 @@ using YamlDotNet.Serialization;
 namespace EBuild.Commands.SubCommands;
 
 [Description("将文本格式的代码转换为易语言源文件。")]
-public class Txt2E : E2Txt
+public class Txt2ECommand : E2TxtCommand
 {
-    public Txt2E(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer, e2txt)
+    public Txt2ECommand(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer, e2txt)
     {
     }
 

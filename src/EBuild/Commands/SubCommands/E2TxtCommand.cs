@@ -12,11 +12,11 @@ using YamlDotNet.Serialization;
 namespace EBuild.Commands.SubCommands;
 
 [Description("将易语言代码转换到txt。")]
-public class E2Txt : TargetCommand<TargetSettings>
+public class E2TxtCommand : TargetCommand<TargetSettings>
 {
     private readonly E2TxtToolchain _e2txt;
 
-    public E2Txt(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer)
+    public E2TxtCommand(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer)
     {
         _e2txt = e2txt;
     }

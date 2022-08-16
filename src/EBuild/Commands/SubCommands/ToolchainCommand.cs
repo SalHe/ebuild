@@ -7,11 +7,11 @@ using YamlDotNet.Serialization;
 namespace EBuild.Commands.SubCommands;
 
 [Description("检查工具链。")]
-public class Toolchain : ProjectCommand<ProjectSettings>
+public class ToolchainCommand : ProjectCommand<ProjectSettings>
 {
     private readonly IEnumerable<IToolchain> _toolchains;
 
-    public Toolchain(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(deserializer)
+    public ToolchainCommand(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(deserializer)
     {
         _toolchains = toolchains;
     }

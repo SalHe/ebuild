@@ -10,7 +10,7 @@ using YamlDotNet.Serialization;
 namespace EBuild.Commands.SubCommands;
 
 [Description("初始化工程。")]
-public class Init : ProjectCommand<Init.Settings>
+public class InitCommand : ProjectCommand<InitCommand.Settings>
 {
     public class Settings : TargetSettings
     {
@@ -21,7 +21,7 @@ public class Init : ProjectCommand<Init.Settings>
     
     private readonly ISerializer _serializer;
 
-    public Init(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
+    public InitCommand(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
     {
         _serializer = serializer;
     }

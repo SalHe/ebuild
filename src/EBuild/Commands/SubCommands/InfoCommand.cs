@@ -9,7 +9,7 @@ using YamlDotNet.Serialization;
 namespace EBuild.Commands.SubCommands;
 
 [Description("查看当前工程信息。")]
-public class Info : ProjectCommand<Info.Settings>
+public class InfoCommand : ProjectCommand<InfoCommand.Settings>
 {
     public class Settings : ProjectSettings
     {
@@ -23,7 +23,7 @@ public class Info : ProjectCommand<Info.Settings>
     }
 
 
-    public Info(IDeserializer deserializer) : base(deserializer)
+    public InfoCommand(IDeserializer deserializer) : base(deserializer)
     {
     }
 

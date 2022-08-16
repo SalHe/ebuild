@@ -9,6 +9,7 @@ using EBuild.Project.Cleaners;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -39,14 +40,14 @@ app.Configure(c =>
 #if DEBUG
     c.PropagateExceptions();
 #endif
-    
+
     c.UseStrictParsing();
 
-    c.AddCommand<Init>("init");
-    c.AddCommand<Info>("info");
-    c.AddCommand<Toolchain>("toolchain");
-    c.AddCommand<E2Txt>("e2txt");
-    c.AddCommand<Txt2E>("txt2e");
+    c.AddCommand<InitCommand>("init");
+    c.AddCommand<InfoCommand>("info");
+    c.AddCommand<ToolchainCommand>("toolchain");
+    c.AddCommand<E2TxtCommand>("e2txt");
+    c.AddCommand<Txt2ECommand>("txt2e");
     c.AddCommand<BuildCommand>("build");
     c.AddCommand<CleanCommand>("clean");
     c.AddCommand<RunCommand>("run");
