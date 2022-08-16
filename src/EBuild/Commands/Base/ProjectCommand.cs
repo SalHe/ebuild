@@ -1,21 +1,28 @@
-﻿using EBuild.Config.Resolved;
+﻿using System.ComponentModel;
+using EBuild.Config.Resolved;
 using EBuild.Project;
 using EBuild.Sources;
 using EBuild.Toolchain;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.Base;
 
-public class ProjectCommand : CommandBase
+public class ProjectSettings : GeneralSettings
 {
-    [Option("-p|--project", Description = "工程根目录，默认为当前工作路径。")]
+    [CommandOption("-p|--project")]
+    [Description("工程根目录，默认为当前工作路径。")]
+    [DefaultValue(".")]
     public string ProjectRoot { get; set; } = Directory.GetCurrentDirectory();
+}
 
+public class ProjectCommand<TSettings> : CommandBase<TSettings>
+    where TSettings : ProjectSettings
+{
     private readonly IDeserializer _deserializer;
-
     protected ResolvedConfig _resolvedConfig;
+    protected string ProjectRoot { get; private set; } = "";
 
     public ProjectCommand(IDeserializer deserializer)
     {
@@ -29,10 +36,9 @@ public class ProjectCommand : CommandBase
 
     protected virtual IEnumerable<IToolchain> NeededToolchains { get; } = new IToolchain[0];
 
-    protected sealed override async Task<int> OnExecuteAsync(
-        CommandLineApplication application,
-        CancellationToken cancellationToken)
+    public sealed override async Task<int> OnExecuteAsync(CancellationToken cancellationToken)
     {
+        ProjectRoot = CommandSettings.ProjectRoot;
         try
         {
             ResolveProjectRoot();
@@ -60,7 +66,7 @@ public class ProjectCommand : CommandBase
             return 1;
         }
 
-        return await OnExecuteInternalAsync(application, cancellationToken);
+        return await OnExecuteInternalAsync(cancellationToken);
     }
 
     private bool CheckToolchians()
@@ -83,13 +89,12 @@ public class ProjectCommand : CommandBase
         ProjectRoot = Path.GetFullPath(ProjectRoot);
     }
 
-    protected virtual Task<int> OnExecuteInternalAsync(CommandLineApplication application,
-        CancellationToken cancellationToken)
+    protected virtual Task<int> OnExecuteInternalAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => OnExecuteInternal(application), cancellationToken);
+        return Task.Run(OnExecuteInternal, cancellationToken);
     }
 
-    protected virtual int OnExecuteInternal(CommandLineApplication application)
+    protected virtual int OnExecuteInternal()
     {
         return 0;
     }

@@ -1,32 +1,37 @@
-﻿using EBuild.Commands.Base;
+﻿using System.ComponentModel;
+using EBuild.Commands.Base;
 using EBuild.Config;
 using EBuild.Project;
 using EBuild.Yaml.Converters;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("init", Description = "初始化工程")]
-public class Init : ProjectCommand
+[Description("初始化工程。")]
+public class Init : ProjectCommand<Init.Settings>
 {
+    public class Settings : TargetSettings
+    {
+        [CommandOption("-d|--default")]
+        [Description("采用默认配置初始化工程。")]
+        public bool DefaultInit { get; init; }
+    }
+    
     private readonly ISerializer _serializer;
 
     public Init(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
     {
         _serializer = serializer;
     }
-
-    [Option("-d|--default", Description = "采用默认配置初始化工程。")]
-    public bool DefaultInit { get; set; }
-
+    
     protected override bool ShowLoadConfig()
     {
         return false;
     }
 
-    protected override int OnExecuteInternal(CommandLineApplication application)
+    protected override int OnExecuteInternal()
     {
         var configFilePath = ProjectPath.GetConfigFilePath(ProjectRoot);
         if (Directory.Exists(ProjectRoot) && Directory.GetFiles(ProjectRoot).Length > 0)
@@ -125,7 +130,7 @@ ebuild e2txt
                 NameStyle = Config.E2Txt.NameStyleEnum.Chinese
             }
         };
-        if (!DefaultInit)
+        if (!CommandSettings.DefaultInit)
         {
             project.Name = AnsiConsole.Ask("工程", project.Name);
             project.Version = AnsiConsole.Ask("版本", project.Version);

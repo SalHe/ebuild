@@ -1,26 +1,33 @@
-﻿using EBuild.Commands.Base;
+﻿using System.ComponentModel;
+using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Yaml.Converters;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("info", Description = "查看当前工程信息。")]
-public class Info : ProjectCommand
+[Description("查看当前工程信息。")]
+public class Info : ProjectCommand<Info.Settings>
 {
-    [Option("--abs", Description = "显示源码的绝对路径")]
-    public bool AbsolutePath { get; set; } = false;
+    public class Settings : ProjectSettings
+    {
+        [CommandOption("--abs")]
+        [Description("显示源码的绝对路径")]
+        public bool AbsolutePath { get; set; } = false;
 
-    [Option("--password", Description = "显示源码的密码")]
-    public bool ShowPassword { get; set; }
+        [CommandOption("--password")]
+        [Description("显示源码的密码")]
+        public bool ShowPassword { get; set; }
+    }
+
 
     public Info(IDeserializer deserializer) : base(deserializer)
     {
     }
 
-    protected override int OnExecuteInternal(CommandLineApplication application)
+    protected override int OnExecuteInternal()
     {
         ShowProjectIntro();
         ShowScripts();
@@ -64,7 +71,7 @@ public class Info : ProjectCommand
         var table = new Table();
         table.AddColumn("源码");
         table.AddColumn("来源");
-        if (ShowPassword)
+        if (CommandSettings.ShowPassword)
             table.AddColumn("密码");
         table.AddColumn("构建");
         table.AddColumn("编译器");
@@ -72,7 +79,7 @@ public class Info : ProjectCommand
         foreach (var target in _resolvedConfig.ResolveTargets)
         {
             var cols = new List<string>();
-            cols.Add(Markup.Escape(AbsolutePath
+            cols.Add(Markup.Escape(CommandSettings.AbsolutePath
                 ? target.Target.Source
                 : Path.GetRelativePath(ProjectRoot, target.Target.Source)));
             switch (target.Origin)
@@ -85,7 +92,7 @@ public class Info : ProjectCommand
                     break;
             }
 
-            if (ShowPassword)
+            if (CommandSettings.ShowPassword)
                 cols.Add(Markup.Escape(target.Password));
 
             cols.Add(target.ShouldBuild ? "[green]:check_mark:[/]" : "[red]:cross_mark:[/]");

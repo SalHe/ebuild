@@ -6,35 +6,38 @@ using EBuild.Config;
 using EBuild.Project;
 using EBuild.Sources;
 using EBuild.Toolchain;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("run",
-    Description = "运行脚本或易语言源文件。",
-    ExtendedHelpText = @"当第一个参数对应了配置文件中某一脚本名字时，将执行脚本对应的内容；
+[Description(@"运行脚本或易语言源文件。
+
+当第一个参数对应了配置文件中某一脚本名字时，将执行脚本对应的内容；
 当第一个参数对应了某一个源码的文件名时，将编译该易语言源文件并执行(要求源文件必须是Windows可执行程序或Windows控制台程序，由于需要编译，建议源文件尽可能小)。
 
 由于执行的对象可能是脚本或者易语言源文件，所以建议您为脚本命名的时候不要与源文件重名。
 此外，目前ebuild不会保证到底先执行哪种情况，所以更加建议您不要重名。
 
-当您执行易语言源文件时，请您自行确保源文件的安全性。",
-    AllowArgumentSeparator = true)]
-public class RunCommand : ProjectCommand
+当您执行易语言源文件时，请您自行确保源文件的安全性。")]
+public class RunCommand : ProjectCommand<RunCommand.Settings>
 {
+    public class Settings : ProjectSettings
+    {
+        [CommandArgument(0, "<脚本名称|易语言源文件>")]
+        [Required]
+        public string TargetToRun { get; init; }
+
+        [CommandOption("--verbose")]
+        [Description("输出编译源文件的输出日志。")]
+        [DefaultValue(false)]
+        public bool Verbose { get; init; }
+    }
+
     private readonly EclToolchain _eclToolchain;
     private readonly EnvironmentVariables _environmentVariables;
     protected override IEnumerable<IToolchain> NeededToolchains { get; }
-
-    [Argument(0, "脚本名称或源文件。")] [Required] public string TargetToRun { get; set; }
-
-    [Option("--verbose", Description = "输出编译源文件的输出日志。")]
-    [DefaultValue(false)]
-    public bool Verbose { get; set; }
-
-    public string[] RemainingArguments { get; }
 
     public RunCommand(IDeserializer deserializer, IEnumerable<IToolchain> toolchains, EclToolchain eclToolchain,
         EnvironmentVariables environmentVariables) :
@@ -45,10 +48,9 @@ public class RunCommand : ProjectCommand
         _environmentVariables = environmentVariables;
     }
 
-    protected override async Task<int> OnExecuteInternalAsync(CommandLineApplication application,
-        CancellationToken cancellationToken)
+    protected override async Task<int> OnExecuteInternalAsync(CancellationToken cancellationToken)
     {
-        var fullPath = Path.GetFullPath(TargetToRun);
+        var fullPath = Path.GetFullPath(CommandSettings.TargetToRun);
         var exeOrBatPath = "";
         if (File.Exists(fullPath))
         {
@@ -63,15 +65,15 @@ public class RunCommand : ProjectCommand
 
             exeOrBatPath = await QuickBuildESource(
                 cancellationToken, _eclToolchain,
-                Verbose,
+                CommandSettings.Verbose,
                 fullPath, meta);
             if (!string.IsNullOrEmpty(exeOrBatPath))
                 AnsiConsole.MarkupLine("[yellow]编译成功，准备运行：`{0}`[/]", Markup.Escape(exeOrBatPath));
         }
-        else if (_resolvedConfig.RootConfig.Scripts?.ContainsKey(TargetToRun) == true)
+        else if (_resolvedConfig.RootConfig.Scripts?.ContainsKey(CommandSettings.TargetToRun) == true)
         {
             var tempFile = Path.GetTempFileName();
-            var batContent = _resolvedConfig.RootConfig.Scripts[TargetToRun];
+            var batContent = _resolvedConfig.RootConfig.Scripts[CommandSettings.TargetToRun];
             batContent = batContent.ReplaceLineEndings("\r\n");
             await File.WriteAllTextAsync(tempFile, batContent, cancellationToken);
             exeOrBatPath = Path.ChangeExtension(tempFile, "ebuild-run.bat");
@@ -82,12 +84,12 @@ public class RunCommand : ProjectCommand
         else
         {
             AnsiConsole.MarkupLine("[red]找不到对于的脚本({0})或源码({1})[/]", Markup.Escape(fullPath),
-                Markup.Escape(TargetToRun));
+                Markup.Escape(CommandSettings.TargetToRun));
             return 1;
         }
 
         var process = new Process();
-        foreach (var arg in RemainingArguments) process.StartInfo.ArgumentList.Add(arg);
+        foreach (var arg in CommandContext.Remaining.Raw) process.StartInfo.ArgumentList.Add(arg);
         process.StartInfo.FileName = exeOrBatPath;
 
         _environmentVariables.ForProject(ProjectRoot, _resolvedConfig.OutputDir);

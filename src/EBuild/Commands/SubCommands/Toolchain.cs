@@ -1,13 +1,13 @@
-﻿using EBuild.Commands.Base;
+﻿using System.ComponentModel;
+using EBuild.Commands.Base;
 using EBuild.Toolchain;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command("toolchain", Description = "检查工具链。 ")]
-public class Toolchain : ProjectCommand
+[Description("检查工具链。")]
+public class Toolchain : ProjectCommand<ProjectSettings>
 {
     private readonly IEnumerable<IToolchain> _toolchains;
 
@@ -18,7 +18,7 @@ public class Toolchain : ProjectCommand
 
     protected override bool ShowLoadConfig() => false;
 
-    protected override int OnExecuteInternal(CommandLineApplication application)
+    protected override int OnExecuteInternal()
     {
         var table = new Table();
         table.AddColumn("工具");

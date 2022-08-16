@@ -1,13 +1,26 @@
-﻿using EBuild.Config.Resolved;
+﻿using System.ComponentModel;
+using EBuild.Config.Resolved;
 using EBuild.Consoles;
 using EBuild.Yaml.Converters;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.Base;
 
-public abstract class TargetCommand : ProjectCommand
+public class TargetSettings : ProjectSettings
+{
+    [CommandOption("-c|--concurrency")]
+    [Description("并行任务个数。")]
+    public int ConcurrencyCount { get; set; } = 1;
+
+    [CommandArgument(0, "[构建目标]")]
+    [Description("被构建的目标或源文件。")]
+    public string[] Targets { get; init; } = Array.Empty<string>() ;
+}
+
+public abstract class TargetCommand<TSettings> : ProjectCommand<TSettings>
+    where TSettings : TargetSettings
 {
     public enum TargetStatus
     {
@@ -27,11 +40,6 @@ public abstract class TargetCommand : ProjectCommand
         ErrorOccured
     }
 
-    public string[] RemainingArguments { get; }
-
-    [Option("-c|--concurrency", Description = "并行任务个数。")]
-    protected int ConcurrencyCount { get; set; } = 1;
-
     protected virtual int MaxConcurrencyCount => int.MaxValue;
 
     public TargetCommand(IDeserializer deserializer) : base(deserializer)
@@ -49,13 +57,12 @@ public abstract class TargetCommand : ProjectCommand
         };
     }
 
-    protected sealed override async Task<int> OnExecuteInternalAsync(CommandLineApplication application,
-        CancellationToken cancellationToken)
+    protected sealed override async Task<int> OnExecuteInternalAsync(CancellationToken cancellationToken)
     {
-        var possibleFile = RemainingArguments.Select(x => Path.GetFullPath(x, ProjectRoot));
+        var possibleFile = CommandSettings.Targets.Select(x => Path.GetFullPath(x, ProjectRoot));
 
         var activatedTargets = _resolvedConfig.ResolveTargets
-            .Where(x => RemainingArguments.Length <= 0 || RemainingArguments.Contains(x.Target.Name) ||
+            .Where(x => CommandSettings.Targets.Length <= 0 || CommandSettings.Targets.Contains(x.Target.Name) ||
                         possibleFile.Contains(x.Target.Source))
             .ToList();
 
@@ -75,7 +82,7 @@ public abstract class TargetCommand : ProjectCommand
         IMultiTaskDisplayer<ResolvedTarget, TargetStatus> displayer,
         CancellationToken cancellationToken)
     {
-        var c = Math.Min(ConcurrencyCount, MaxConcurrencyCount);
+        var c = Math.Min(CommandSettings.ConcurrencyCount, MaxConcurrencyCount);
         var semaphore = new Semaphore(c, c);
         var allOk = true;
 

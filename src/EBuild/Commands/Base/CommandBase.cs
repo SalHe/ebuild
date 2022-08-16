@@ -1,16 +1,38 @@
-﻿using System.Reflection;
-using McMaster.Extensions.CommandLineUtils;
+﻿using Spectre.Console.Cli;
 
 namespace EBuild.Commands.Base;
 
-[HelpOption(Description = "查看帮助信息")]
-[VersionOptionFromMember(Description = "查看当前版本", MemberName = nameof(VersionText))]
-public class CommandBase
+public class GeneralSettings : CommandSettings
 {
-    protected virtual Task<int> OnExecuteAsync(CommandLineApplication application, CancellationToken cancellationToken)
+}
+
+public class CommandBase<TSettings> : AsyncCommand<TSettings>
+    where TSettings : GeneralSettings
+{
+    public TSettings CommandSettings { get; private set; }
+    public CommandContext CommandContext { get; set; }
+
+    public sealed override async Task<int> ExecuteAsync(CommandContext context, TSettings settings)
+    {
+        CancellationTokenSource cts = new CancellationTokenSource();
+        cts.Token.Register(() => Console.CancelKeyPress -= Handler);
+
+        void Handler(object? sender, ConsoleCancelEventArgs e)
+        {
+            e.Cancel = true;
+            cts.Cancel();
+        }
+
+        Console.CancelKeyPress += Handler;
+
+        CommandSettings = settings;
+        CommandContext = context;
+
+        return await OnExecuteAsync(cts.Token);
+    }
+
+    public virtual Task<int> OnExecuteAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult(0);
     }
-
-    public static string VersionText() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 }

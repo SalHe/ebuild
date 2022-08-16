@@ -1,25 +1,21 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Consoles;
 using EBuild.Toolchain;
-using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
 namespace EBuild.Commands.SubCommands;
 
-[Command(
-    "build",
-    Description = "构建目标。",
-    ExtendedHelpText = @"
+[Description(@"构建目标。
+
 本命令帮助您编译您配置文件的中的构建目标以及被搜索到的源文件。
 您也可以手动指定要编译的目标或者源文件，如`ebuild build 程序1 程序2`。
-当您不指定编译目标的时候，ebuild默认编译所有目标。",
-    UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue
-)]
-public class BuildCommand : TargetCommand
+当您不指定编译目标的时候，ebuild默认编译所有目标。")]
+public class BuildCommand : TargetCommand<TargetSettings>
 {
     private readonly EclToolchain _eclToolchain;
 
@@ -55,7 +51,7 @@ public class BuildCommand : TargetCommand
                 return "{0}";
             }
         };
-        if (ConcurrencyCount > MaxConcurrencyCount)
+        if (CommandSettings.ConcurrencyCount > MaxConcurrencyCount)
             displayer.SetHeader("[grey]目前不支持并行编译目标[/]");
         return displayer;
     }
@@ -108,7 +104,7 @@ public class BuildCommand : TargetCommand
 
         var compileOk = true;
         var handler = GetEclLogHandler(Update, () => compileOk = false);
-        
+
         var process = new Process();
         foreach (var arg in GetBuildArgs(target)) process.StartInfo.ArgumentList.Add(arg);
         process.StartInfo.FileName = _eclToolchain.ExecutablePath;
