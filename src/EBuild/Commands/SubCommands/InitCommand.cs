@@ -12,20 +12,20 @@ namespace EBuild.Commands.SubCommands;
 [Description("初始化工程。")]
 public class InitCommand : ProjectCommand<InitCommand.Settings>
 {
-    public class Settings : TargetSettings
+    public class Settings : ProjectSettings
     {
         [CommandOption("-d|--default")]
         [Description("采用默认配置初始化工程。")]
         public bool DefaultInit { get; init; }
     }
-    
+
     private readonly ISerializer _serializer;
 
     public InitCommand(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
     {
         _serializer = serializer;
     }
-    
+
     protected override bool ShowLoadConfig()
     {
         return false;
