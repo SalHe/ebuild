@@ -42,6 +42,7 @@ app.Configure(c =>
 #endif
 
     c.UseStrictParsing();
+    c.SetApplicationVersion(Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
     c.AddCommand<InitCommand>("init");
     c.AddCommand<InfoCommand>("info");
