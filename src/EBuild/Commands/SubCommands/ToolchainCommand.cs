@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using EBuild.Commands.Base;
+using EBuild.Plugins;
 using EBuild.Toolchain;
 using Spectre.Console;
 using YamlDotNet.Serialization;
@@ -11,7 +12,8 @@ public class ToolchainCommand : ProjectCommand<ProjectSettings>
 {
     private readonly IEnumerable<IToolchain> _toolchains;
 
-    public ToolchainCommand(IEnumerable<IToolchain> toolchains, IDeserializer deserializer) : base(deserializer)
+    public ToolchainCommand(IEnumerable<IToolchain> toolchains, IDeserializer deserializer,
+        IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
     {
         _toolchains = toolchains;
     }

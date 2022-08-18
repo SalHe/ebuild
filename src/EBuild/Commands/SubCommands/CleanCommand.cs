@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using EBuild.Commands.Base;
+using EBuild.Plugins;
 using EBuild.Project.Cleaners;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -29,7 +30,8 @@ public class CleanCommand : ProjectCommand<CleanCommand.Settings>
 
     private readonly IEnumerable<ProjectCleaner> _projectCleaners;
 
-    public CleanCommand(IDeserializer deserializer, IEnumerable<ProjectCleaner> projectCleaners) : base(deserializer)
+    public CleanCommand(IDeserializer deserializer, IEnumerable<ProjectCleaner> projectCleaners,
+        IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
     {
         _projectCleaners = projectCleaners;
     }

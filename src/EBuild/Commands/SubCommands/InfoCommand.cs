@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
+using EBuild.Plugins;
 using EBuild.Yaml.Converters;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -23,7 +24,7 @@ public class InfoCommand : ProjectCommand<InfoCommand.Settings>
     }
 
 
-    public InfoCommand(IDeserializer deserializer) : base(deserializer)
+    public InfoCommand(IDeserializer deserializer, IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
     {
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using EBuild.Commands.Base;
 using EBuild.Config;
+using EBuild.Plugins;
 using EBuild.Project;
 using EBuild.Yaml.Converters;
 using Spectre.Console;
@@ -21,7 +22,7 @@ public class InitCommand : ProjectCommand<InitCommand.Settings>
 
     private readonly ISerializer _serializer;
 
-    public InitCommand(IDeserializer deserializer, ISerializer serializer) : base(deserializer)
+    public InitCommand(IDeserializer deserializer, ISerializer serializer, IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
     {
         _serializer = serializer;
     }

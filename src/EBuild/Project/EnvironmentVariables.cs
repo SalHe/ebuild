@@ -3,7 +3,7 @@ using EBuild.Toolchain;
 
 namespace EBuild.Project;
 
-public class EnvironmentVariables : List<EnvironmentVariable>
+public class EnvironmentVariables : List<EnvironmentVariable>, ICloneable
 {
     private readonly IEnumerable<IToolchain> _toolchains;
 
@@ -30,5 +30,12 @@ public class EnvironmentVariables : List<EnvironmentVariable>
         {
             d[variable.VariableName] = variable.Value();
         }
+    }
+
+    public object Clone()
+    {
+        var evs = new EnvironmentVariables(_toolchains);
+        this.ForEach(evs.Add);
+        return evs;
     }
 }

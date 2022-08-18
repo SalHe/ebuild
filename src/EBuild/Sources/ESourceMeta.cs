@@ -13,9 +13,9 @@ public enum TargetType
     [ESourceTargetType(Extension = "exe")] WinForm = 0,
     [ESourceTargetType(Extension = "exe")] WinConsole = 1,
     [ESourceTargetType(Extension = "dll")] WinDll = 2,
-    [ESourceTargetType(Extension = "ec")] WinECom = 1000,
+    [ESourceTargetType(Extension = "ec")] WinEc = 1000,
     [ESourceTargetType(Extension = null)] LinuxConsole = 10000,
-    [ESourceTargetType(Extension = null)] LinuxECom = 11000
+    [ESourceTargetType(Extension = null)] LinuxEc = 11000
 }
 
 public class ESourceMeta

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using EBuild.Config.Resolved;
 using EBuild.Consoles;
+using EBuild.Plugins;
 using EBuild.Yaml.Converters;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -16,23 +17,12 @@ public class TargetSettings : ProjectSettings
 
     [CommandArgument(0, "[目标或源文件...]")]
     [Description("参与本次操作的目标或源文件。")]
-    public string[] Targets { get; init; } = Array.Empty<string>() ;
+    public string[] Targets { get; init; } = Array.Empty<string>();
 }
 
 public abstract class TargetCommand<TSettings> : ProjectCommand<TSettings>
     where TSettings : TargetSettings
 {
-    public enum TargetStatus
-    {
-        [EnumAlias("等待中")] Waiting,
-
-        [EnumAlias("[yellow]:red_exclamation_mark:[/]")]
-        Skipped,
-        [EnumAlias("进行中")] Doing,
-        [EnumAlias("[green]:check_mark:[/]")] Done,
-        [EnumAlias("[red]:cross_mark:[/]")] Error
-    }
-
     protected enum WholeStatus
     {
         Doing,
@@ -42,7 +32,7 @@ public abstract class TargetCommand<TSettings> : ProjectCommand<TSettings>
 
     protected virtual int MaxConcurrencyCount => int.MaxValue;
 
-    public TargetCommand(IDeserializer deserializer) : base(deserializer)
+    public TargetCommand(IDeserializer deserializer, IEnumerable<IPlugin> plugins) : base(deserializer, plugins)
     {
     }
 
@@ -122,4 +112,15 @@ public abstract class TargetCommand<TSettings> : ProjectCommand<TSettings>
     protected abstract Task<bool> OnDoTargetAsync(ResolvedTarget target,
         Action<TargetStatus, string> updateTargetStatus,
         CancellationToken cancellationToken);
+}
+
+public enum TargetStatus
+{
+    [EnumAlias("等待中")] Waiting,
+
+    [EnumAlias("[yellow]:red_exclamation_mark:[/]")]
+    Skipped,
+    [EnumAlias("进行中")] Doing,
+    [EnumAlias("[green]:check_mark:[/]")] Done,
+    [EnumAlias("[red]:cross_mark:[/]")] Error
 }

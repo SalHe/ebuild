@@ -67,8 +67,8 @@ public class EclToolchain : GeneralToolchain
         if (isPackage) args.Add("-p");
         else
         {
-            if (sourceMeta?.TargetType != TargetType.LinuxECom &&
-                sourceMeta?.TargetType != TargetType.WinECom) // 编译模块不用选择编译器
+            if (sourceMeta?.TargetType != TargetType.LinuxEc &&
+                sourceMeta?.TargetType != TargetType.WinEc) // 编译模块不用选择编译器
                 args.AddRange(CompilerArgs(compiler, compileConfig,
                     compileDescription));
             if (!string.IsNullOrEmpty(password))

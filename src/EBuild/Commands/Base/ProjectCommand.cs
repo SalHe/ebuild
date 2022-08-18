@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using EBuild.Config.Resolved;
+using EBuild.Plugins;
 using EBuild.Project;
 using EBuild.Sources;
 using EBuild.Toolchain;
@@ -24,7 +25,7 @@ public class ProjectCommand<TSettings> : CommandBase<TSettings>
     protected ResolvedConfig _resolvedConfig;
     protected string ProjectRoot { get; private set; } = "";
 
-    public ProjectCommand(IDeserializer deserializer)
+    public ProjectCommand(IDeserializer deserializer, IEnumerable<IPlugin> plugins) : base(plugins)
     {
         _deserializer = deserializer;
     }

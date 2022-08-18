@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
+using EBuild.Plugins;
 using EBuild.Project;
 using EBuild.Toolchain;
 using Spectre.Console;
@@ -16,7 +17,7 @@ public class E2TxtCommand : TargetCommand<TargetSettings>
 {
     private readonly E2TxtToolchain _e2txt;
 
-    public E2TxtCommand(IDeserializer deserializer, E2TxtToolchain e2txt) : base(deserializer)
+    public E2TxtCommand(IDeserializer deserializer, E2TxtToolchain e2txt, IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
     {
         _e2txt = e2txt;
     }

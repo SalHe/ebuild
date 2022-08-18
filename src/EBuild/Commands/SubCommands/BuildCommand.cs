@@ -4,6 +4,9 @@ using System.Text;
 using EBuild.Commands.Base;
 using EBuild.Config.Resolved;
 using EBuild.Consoles;
+using EBuild.Hooks;
+using EBuild.Plugins;
+using EBuild.Project;
 using EBuild.Toolchain;
 using Spectre.Console;
 using YamlDotNet.Serialization;
@@ -17,10 +20,13 @@ namespace EBuild.Commands.SubCommands;
 当您不指定编译目标的时候，ebuild默认编译所有目标。")]
 public class BuildCommand : TargetCommand<TargetSettings>
 {
+    private readonly EnvironmentVariables _environmentVariables;
     private readonly EclToolchain _eclToolchain;
 
-    public BuildCommand(IDeserializer deserializer, EclToolchain eclToolchain) : base(deserializer)
+    public BuildCommand(IDeserializer deserializer, IEnumerable<IPlugin> plugins,
+        EnvironmentVariables environmentVariables, EclToolchain eclToolchain) : base(deserializer, plugins)
     {
+        _environmentVariables = environmentVariables;
         _eclToolchain = eclToolchain;
     }
 
@@ -71,7 +77,7 @@ public class BuildCommand : TargetCommand<TargetSettings>
         return "";
     }
 
-    protected override Task<bool> OnPreDoTargetAsync(ResolvedTarget target,
+    protected override async Task<bool> OnPreDoTargetAsync(ResolvedTarget target,
         Action<TargetStatus, string> updateTargetStatus,
         CancellationToken cancellationToken)
     {
@@ -88,7 +94,40 @@ public class BuildCommand : TargetCommand<TargetSettings>
             updateTargetStatus(TargetStatus.Skipped, "本目标已被排除编译，将被跳过");
         }
 
-        return Task.FromResult(target.ShouldBuild);
+        if (target.ShouldBuild)
+        {
+            var evs = (EnvironmentVariables)_environmentVariables.Clone();
+            SetupEnvironmentVariables(target, evs, Hook.PreBuild);
+            foreach (var plugin in _plugins)
+            {
+                bool shouldContinue = await plugin.OnHook(new PluginContext(_resolvedConfig, evs)
+                {
+                    BuildTarget = target,
+                    UpdateStatus = (status, log) => updateTargetStatus(status, $"[yellow][[{Hook.PreBuild}]]{log}[/]"),
+                }, cancellationToken, Hook.PreBuild);
+                if (!shouldContinue)
+                {
+                    updateTargetStatus(TargetStatus.Skipped, $"[[{Hook.PreBuild}]]已由构建周期脚本取消该任务！");
+                    return false;
+                }
+            }
+        }
+
+        return target.ShouldBuild;
+    }
+
+    private void SetupEnvironmentVariables(ResolvedTarget target, EnvironmentVariables evs, Hook hook)
+    {
+        evs.ForProject(ProjectRoot, _resolvedConfig.OutputDir);
+        evs.AddRange(new[]
+        {
+            new EnvironmentVariable("EBUILD_PERIOD", "构建生命周期", hook.ToString),
+            new EnvironmentVariable("EBUILD_SOURCE_FILE", "被构建的源文件", () => target.Target.Source),
+            new EnvironmentVariable("EBUILD_TARGET_FILE", "构建目标输出路径",
+                () => target.Target.OutputPath(_resolvedConfig.OutputDir)),
+            new EnvironmentVariable("EBUILD_TARGET_TYPE", "构建目标类型",
+                () => target.SourceMeta?.TargetType.ToString() ?? "(Unkown)"),
+        });
     }
 
     private IList<string> GetBuildArgs(ResolvedTarget target, bool hideSecret = false)
@@ -128,8 +167,20 @@ public class BuildCommand : TargetCommand<TargetSettings>
             }
         }
 
+        var evs = (EnvironmentVariables)_environmentVariables.Clone();
+        SetupEnvironmentVariables(target, evs, Hook.PostBuild);
+        foreach (var plugin in _plugins)
+        {
+            await plugin.OnHook(new PluginContext(_resolvedConfig, evs)
+            {
+                BuildTarget = target,
+                UpdateStatus = (status, log) => updateTargetStatus(status, $"[yellow][[{Hook.PostBuild}]]{log}[/]"),
+            }, cancellationToken, Hook.PostBuild);
+        }
+
         if (compileOk)
             Update(TargetStatus.Done, $"编译成功，保存到：{target.Target.OutputPath(_resolvedConfig.OutputDir)}");
+
         return compileOk;
     }
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using EBuild.Commands.Base;
 using EBuild.Config;
+using EBuild.Plugins;
 using EBuild.Project;
 using EBuild.Sources;
 using EBuild.Toolchain;
@@ -40,8 +41,8 @@ public class RunCommand : ProjectCommand<RunCommand.Settings>
     protected override IEnumerable<IToolchain> NeededToolchains { get; }
 
     public RunCommand(IDeserializer deserializer, IEnumerable<IToolchain> toolchains, EclToolchain eclToolchain,
-        EnvironmentVariables environmentVariables) :
-        base(deserializer)
+        EnvironmentVariables environmentVariables, IEnumerable<IPlugin> plugins) :
+        base(deserializer,plugins)
     {
         NeededToolchains = toolchains;
         _eclToolchain = eclToolchain;

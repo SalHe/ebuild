@@ -4,6 +4,7 @@ using EBuild.Commands.SubCommands;
 using EBuild.DependencyInjection;
 using EBuild.Extensions;
 using EBuild.Global;
+using EBuild.Plugins;
 using EBuild.Project;
 using EBuild.Project.Cleaners;
 using EBuild.Toolchain;
@@ -32,6 +33,8 @@ services.AddImplementation<IToolchain, ELangToolchain>();
 services.AddImplementation<ProjectCleaner, ProjectRecoverECleaner>();
 services.AddImplementation<ProjectCleaner, ProjectECodeCleaner>();
 services.AddImplementation<ProjectCleaner, ProjectOutputCleaner>();
+
+services.AddImplementation<IPlugin, BuildHookScriptPlugin>();
 
 var app = new CommandApp(new TypeRegistrar(services));
 app.Configure(c =>
