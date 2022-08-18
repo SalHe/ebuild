@@ -9,7 +9,6 @@ using EBuild.Project.Cleaners;
 using EBuild.Toolchain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 using Spectre.Console.Cli;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -39,18 +38,27 @@ app.Configure(c =>
 {
 #if DEBUG
     c.PropagateExceptions();
+    c.ValidateExamples();
 #endif
 
     c.UseStrictParsing();
     c.SetApplicationVersion(Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-    c.AddCommand<InitCommand>("init");
-    c.AddCommand<InfoCommand>("info");
+    c.AddCommand<InitCommand>("init")
+        .WithExample(new[] { "init", "--default" })
+        .WithExample(new[] { "init", "--project", "./examples/proj-1" });
+    c.AddCommand<InfoCommand>("info")
+        .WithExample(new[] { "info", "--project", "./examples/proj-1" });
     c.AddCommand<ToolchainCommand>("toolchain");
-    c.AddCommand<E2TxtCommand>("e2txt");
-    c.AddCommand<Txt2ECommand>("txt2e");
-    c.AddCommand<BuildCommand>("build");
-    c.AddCommand<CleanCommand>("clean");
+    c.AddCommand<E2TxtCommand>("e2txt")
+        .WithExample(new[] { "e2txt", "./源码1.e", "我的DLL" });
+    c.AddCommand<Txt2ECommand>("txt2e")
+        .WithExample(new[] { "txt2e", "./源码1.e", "我的DLL" });
+    c.AddCommand<BuildCommand>("build")
+        .WithExample(new[] { "build", "./源码1.e", "我的DLL" });
+    c.AddCommand<CleanCommand>("clean")
+        .WithExample(new[] { "clean", "--ecode" })
+        .WithExample(new[] { "clean", "--ecode", "--force" });
     c.AddCommand<RunCommand>("run");
 });
 return app.Run(args);

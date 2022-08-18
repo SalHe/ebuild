@@ -12,10 +12,10 @@ public class TargetSettings : ProjectSettings
 {
     [CommandOption("-c|--concurrency")]
     [Description("并行任务个数。")]
-    public int ConcurrencyCount { get; set; } = 1;
+    public int ConcurrencyCount { get; init; } = 1;
 
-    [CommandArgument(0, "[构建目标]")]
-    [Description("被构建的目标或源文件。")]
+    [CommandArgument(0, "[目标或源文件...]")]
+    [Description("参与本次操作的目标或源文件。")]
     public string[] Targets { get; init; } = Array.Empty<string>() ;
 }
 
