@@ -12,8 +12,6 @@ jobs:
         sc: ["--self-contained", ""]
         single-file: ["true", "false"]
         runtime: ["win-x86"]
-    environment:
-      zip-file: ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip
     steps:
     
     - uses: actions/checkout@v3
@@ -36,10 +34,10 @@ jobs:
       run: dotnet publish .\src\EBuild\ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }}
     
     - name: Zip
-      run: zip -r ${{ zip-file }} ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
+      run: zip -r ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
       
     - name: Upload Artifact
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: ${{ zip-file }}
-        path: ${{ zip-file }}
+        name: ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip
+        path: ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip
