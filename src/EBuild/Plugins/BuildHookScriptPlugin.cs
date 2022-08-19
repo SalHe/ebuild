@@ -10,6 +10,7 @@ public class BuildHookScriptPlugin : Plugin
 {
     public override async Task<bool> OnHook(PluginContext context, CancellationToken cancellationToken, Hook hook)
     {
+        if (context.BuildTarget!.Target?.Hooks?.ContainsKey(hook) != true) return true;
         string batContent = context.BuildTarget!.Target?.Hooks?[hook].ReplaceLineEndings("\r\n") ?? "";
         if (string.IsNullOrEmpty(batContent))
             return true;
