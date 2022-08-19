@@ -1,0 +1,34 @@
+﻿project:
+  name: ebuild-example
+  version: "1.0"
+  description: 这是由ebuild创建的示例工程。
+  author: SalHe
+  repository: https://github.com/SalHe/ebuild
+  homepage: https://github.com/SalHe
+excludes:
+  - '**/*.recover.e'
+  - '**/*.ecode/**.e'
+  - '**/*.代码/**.e'
+exclude-builds:
+  - './scripts/**/*.e' # 脚本文件不纳入'ebuild build'命令中进行自动构建
+includes:
+  - '**/*.e'
+e2txt:
+  name-style: 中文
+  generate-e: true
+build:
+  compiler: 独立编译
+targets:
+  - name: a.e——静态编译版
+    description: 这是一个简单的控制台程序，会在标准输出输出一句问候。
+    source: ./a.e
+    output: a——静态编译版.exe
+    build:
+      compiler: 静态编译
+
+  - name: a——黑月版
+    description: 这是一个简单的控制台程序，会在标准输出输出一句问候。
+    source: ./a.e
+    output: a——黑月版.exe
+    build:
+      compiler: 黑月编译

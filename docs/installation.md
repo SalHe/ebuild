@@ -61,7 +61,7 @@ ebuild-v1.0
  │   ├── e2txt
  │   │   ├── BaseELangIDE.dll
  │   │   ├── e2txt-gui.exe
- │   │   ├── **e2txt.exe**
+ │   │   ├── e2txt.exe
  │   │   ├── Lang
  │   │   │   └── ELang
  │   │   └── readme.txt

@@ -4,7 +4,7 @@
 
 ## 工程相关脚本
 
-在`ebuild.yaml`中有一个名为`scripts`的节点，其下可以存放若干脚本，可以使用[`ebuild run`](../cli/ebuild_run.md)执行。您大可将工程相关的一些固定操作写成脚本放到`scripts`中。`ebuild`在执行这些脚本的时候，会传递一些环境变量
+在`ebuild.yaml`中有一个名为`scripts`的节点，其下可以存放若干脚本，可以使用`ebuild run`执行。您大可将工程相关的一些固定操作写成脚本放到`scripts`中。`ebuild`在执行这些脚本的时候，会传递一些环境变量
 
 ```yaml
 project:
