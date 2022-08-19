@@ -42,7 +42,7 @@ public class RunCommand : ProjectCommand<RunCommand.Settings>
 
     public RunCommand(IDeserializer deserializer, IEnumerable<IToolchain> toolchains, EclToolchain eclToolchain,
         EnvironmentVariables environmentVariables, IEnumerable<IPlugin> plugins) :
-        base(deserializer,plugins)
+        base(deserializer, plugins)
     {
         NeededToolchains = toolchains;
         _eclToolchain = eclToolchain;

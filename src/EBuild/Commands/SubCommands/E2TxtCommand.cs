@@ -17,7 +17,8 @@ public class E2TxtCommand : TargetCommand<TargetSettings>
 {
     private readonly E2TxtToolchain _e2txt;
 
-    public E2TxtCommand(IDeserializer deserializer, E2TxtToolchain e2txt, IEnumerable<IPlugin> plugins) : base(deserializer,plugins)
+    public E2TxtCommand(IDeserializer deserializer, E2TxtToolchain e2txt, IEnumerable<IPlugin> plugins) : base(
+        deserializer, plugins)
     {
         _e2txt = e2txt;
     }

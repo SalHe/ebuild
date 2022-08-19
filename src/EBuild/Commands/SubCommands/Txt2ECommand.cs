@@ -10,7 +10,8 @@ namespace EBuild.Commands.SubCommands;
 [Description("将文本格式的代码转换为易语言源文件。")]
 public class Txt2ECommand : E2TxtCommand
 {
-    public Txt2ECommand(IDeserializer deserializer, E2TxtToolchain e2txt, IEnumerable<IPlugin> plugins) : base(deserializer, e2txt, plugins)
+    public Txt2ECommand(IDeserializer deserializer, E2TxtToolchain e2txt, IEnumerable<IPlugin> plugins) : base(
+        deserializer, e2txt, plugins)
     {
     }
 
