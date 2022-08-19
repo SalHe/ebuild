@@ -36,7 +36,7 @@ jobs:
       run: dotnet publish .\src\EBuild\ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }}
     
     - name: Zip
-      run: zip -r ${{ zip-file }} ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
+      run: zip -r ${zip-file} ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
       
     - name: Upload Artifact
       uses: actions/upload-artifact@v1.0.0
