@@ -49,16 +49,9 @@ export default defineConfig({
       },
       {
         text: '命令行帮助',
-        items: cliItems(
-          { subCommand: 'init', title: '初始化工程' },
-          { subCommand: 'info', title: '查看工程' },
-          { subCommand: 'e2txt', title: '易转文本' },
-          { subCommand: 'txt2e', title: '文本转易' },
-          { subCommand: 'build', title: '构建工程' },
-          { subCommand: 'clean', title: '清理工程' },
-          { subCommand: 'run', title: '运行脚本' },
-          { subCommand: 'toolchain', title: '检查工具链' },
-        )
+        items: [
+          { text: '概览', link: '/cli/' },
+        ]
       }
     ],
     editLink: {
@@ -80,15 +73,3 @@ export default defineConfig({
     }
   }
 })
-
-interface SubCommand {
-  subCommand: string,
-  title?: string
-}
-
-function cliItems(...subCommands: SubCommand[]) {
-  return subCommands.map(x => ({
-    text: x.title ? `${x.title} - ${x.subCommand}` : x.subCommand,
-    link: `/cli/#ebuild-${x.subCommand}`
-  }))
-}
