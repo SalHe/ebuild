@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sc: ["--self-contained", ""]
+        sc: ["--self-contained"]
         single-file: ["true", "false"]
         runtime: ["win-x86"]
     steps:
