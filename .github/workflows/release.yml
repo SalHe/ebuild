@@ -31,7 +31,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     
     - name: Publish
-      run: dotnet publish .\src\EBuild\ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }}
+      run: dotnet publish ./src/EBuild/ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }}
     
     - name: Zip
       run: zip -r ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
