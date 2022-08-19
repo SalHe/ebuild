@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
@@ -16,14 +16,6 @@ jobs:
           node-version: 16
           cache: yarn
       - run: yarn install --frozen-lockfile
-
-      - name: 安装golang依赖
-        uses: magnetikonline/action-golang-cache@v3
-        with:
-          go-version-file: go.mod
-
-      - name: 更新命令行文档
-        run: go generate main.go && go run ./entry/gen_doc.go
 
       - name: Build
         run: yarn docs:build
