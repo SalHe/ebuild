@@ -1,21 +1,45 @@
 name: Release
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
+    
 
 jobs:
-  releases-matrix:
-    name: Release Go Binary
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sc: ["--self-contained", ""]
+        single-file: ["true", "false"]
+        runtime: ["win-x86"]
+    env:
+      zip-file: ebuild${{ matrix.runtime }}${{ matrix.runtime }}--single-file(${{ matrix.single-file }}).zip
     steps:
+    
     - uses: actions/checkout@v3
-    - uses: wangyoucao577/go-release-action@v1.30
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        pre_command: go generate -v .
-        goos: windows
-        goarch: 386
-        project_path: "."
-        binary_name: "ebuild"
-        extra_files: LICENSE ./docs/**
+        dotnet-version: 6.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --no-restore
+    
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    
+    - name: Publish
+      run: dotnet publish .\src\EBuild\ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }}
+    
+    - name: Zip
+      run: zip -r ${{ zip-file }} ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ zip-file }}
+        path: ${{ zip-file }}
