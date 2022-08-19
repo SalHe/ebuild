@@ -1,6 +1,6 @@
 import { defineConfig } from "vitepress";
 import miCheckbox from "markdown-it-task-checkbox";
-import { version } from '../../package.json'
+import { version } from '../../package.json';
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -18,6 +18,7 @@ export default defineConfig({
     nav: [
       { text: '使用向导', link: '/README' },
       { text: '命令行帮助', link: '/cli/' },
+      { text: `v${version}`, link: `https://github.com/SalHe/ebuild/releases/tag/v${version}` },
       {
         text: '友情链接',
         items: [

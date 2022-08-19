@@ -1,6 +1,6 @@
 {
   "name": "ebuild",
-  "version": "1.1.0",
+  "version": "1.1.0.0",
   "main": "index.js",
   "repository": "https://github.com/SalHe/ebuild.git",
   "author": "SalHe Li <SalHe@qq.com>",
