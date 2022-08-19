@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
 
 namespace EBuild.Toolchain;
 
@@ -24,7 +24,8 @@ public abstract class GeneralToolchain : IToolchain
         {
             GetExecutablePath(projectRootDir, _executableName),
             GetExecutablePath(Directory.GetCurrentDirectory(), _executableName),
-            GetExecutablePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _executableName)
+            GetExecutablePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName ?? "") ?? "",
+                _executableName)
         };
         foreach (var path in possible)
             if (File.Exists(path))

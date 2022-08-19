@@ -1,0 +1,49 @@
+name: Build Latest
+
+on:
+  push:
+    branches: ["master"]
+    paths: ["./src/**"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sc: ["--self-contained"]
+        single-file: ["true", "false"]
+        runtime: ["win-x86"]
+    steps:
+    
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore --runtime ${{ matrix.runtime }}
+    
+    - name: Build
+      run: dotnet build --no-restore
+    
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    
+    - name: Publish
+      run: dotnet publish ./src/EBuild/ --runtime ${{ matrix.runtime }} --configuration Release ${{ matrix.sc }} --no-restore -p:PublishSingleFile=${{ matrix.single-file }} -p:PublishTrimmed=true
+      
+    - name: Upload Artifact
+      if: matrix.single-file == 'true'
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ebuild-${{ matrix.runtime }}-single-file
+        path: ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
+
+    - name: Upload Artifact
+      if: matrix.single-file == 'false'
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ebuild-${{ matrix.runtime }}
+        path: ./src/EBuild/bin/Release/net6.0/${{ matrix.runtime }}/publish
